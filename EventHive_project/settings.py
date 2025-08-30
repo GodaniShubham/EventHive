@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'EventHive_app',
-    # 'users',
+
 ]
 
 MIDDLEWARE = [
@@ -134,13 +134,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "EventHive_app.CustomUser"
 
-# Email Backend (for OTP)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "godanishubham30@gmail.com"
-EMAIL_HOST_PASSWORD = "cjiu mtga qdmd elna"
+# # Email Backend (for OTP)
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = "godanishubham30@gmail.com"
+# EMAIL_HOST_PASSWORD = "cjiu mtga qdmd elna"
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -150,3 +150,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "godanishubham30@gmail.com"
 EMAIL_HOST_PASSWORD = "cjiu mtga qdmd elna"  # Use a Gmail App Password (see below)
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

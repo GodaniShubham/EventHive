@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-900 text-white flex justify-center items-center p-6">
+  <div class="w-full max-w-5xl bg-gray-800 rounded-2xl shadow-2xl p-8 relative overflow-hidden">
+
+    <!-- Animated Glow Background -->
+    <div class="absolute inset-0 bg-gradient-to-r from-purple-700 via-pink-600 to-yellow-500 opacity-20 blur-3xl animate-pulse"></div>
+
+    <h2 class="text-3xl font-extrabold mb-6 relative z-10">🎭 Edit Event</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-6 relative z-10">
+      {% csrf_token %}
+
+      <!-- Event Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm mb-2">Event Name</label>
+          <input type="text" name="title" value="{{ event.title }}" 
+                 class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-pink-500 outline-none transition" />
+        </div>
+        <div>
+          <label class="block text-sm mb-2">Location</label>
+          <input type="text" name="location" value="{{ event.location }}"
+                 class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-pink-500 outline-none transition" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm mb-2">Description</label>
+        <textarea name="description" rows="3"
+                  class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-pink-500">{{ event.description }}</textarea>
+      </div>
+
+      <!-- Dates -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm mb-2">Start Date</label>
+          <input type="date" name="start_date" value="{{ event.start_date }}"
+                 class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-yellow-400" />
+        </div>
+        <div>
+          <label class="block text-sm mb-2">End Date</label>
+          <input type="date" name="end_date" value="{{ event.end_date }}"
+                 class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-yellow-400" />
+        </div>
+      </div>
+
+      <!-- Category + Publish -->
+      <div class="flex items-center justify-between">
+        <div>
+          <label class="block text-sm mb-2">Category</label>
+          <select name="category" class="p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-green-500">
+            {% for cat in categories %}
+              <option value="{{ cat.id }}" {% if event.category.id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span class="text-sm">Publish Event</span>
+          <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" name="is_published" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:bg-green-500 relative transition-all"></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Ticket Table -->
+      <div class="mt-8">
+        <h3 class="text-xl font-bold mb-3">🎟️ Ticket Types</h3>
+        <table class="w-full border border-gray-700 text-sm rounded-lg overflow-hidden">
+          <thead class="bg-gray-700 text-gray-300">
+            <tr>
+              <th class="p-3 text-left">Ticket Name</th>
+              <th class="p-3">Price</th>
+              <th class="p-3">Available Qty</th>
+              <th class="p-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ticket in tickets %}
+            <tr class="border-b border-gray-600 hover:bg-gray-700 transition">
+              <td class="p-3">{{ ticket.type }}</td>
+              <td class="p-3">₹{{ ticket.price }}</td>
+              <td class="p-3">{{ ticket.available_quantity }}</td>
+              <td class="p-3 flex gap-2">
+                <a href="#" class="px-3 py-1 bg-blue-600 rounded-lg hover:bg-blue-500 transition">Edit</a>
+                <a href="#" class="px-3 py-1 bg-red-600 rounded-lg hover:bg-red-500 transition">Delete</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center text-gray-400 p-4">No tickets added yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Save Button -->
+      <div class="flex justify-center mt-8">
+        <button type="submit" class="px-8 py-3 bg-gradient-to-r from-pink-600 via-purple-600 to-yellow-400 text-white font-bold rounded-full shadow-xl transform hover:scale-105 transition-all">
+          ✨ Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ event.title }} | EventHive{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Breadcrumbs -->
+    <nav class="text-sm mb-6 text-gray-600">
+        <a href="{% url 'attendee_home' %}" class="hover:text-indigo-600">All Events</a> 
+        <span class="mx-2">/</span> 
+        <span class="text-gray-800 font-medium">{{ event.title }}</span>
+    </nav>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+        
+        <!-- Left Section -->
+        <div class="md:col-span-2 space-y-8">
+
+            <!-- Banner Carousel -->
+            <div class="relative w-full overflow-hidden rounded-2xl shadow-lg">
+                <div class="flex transition-transform duration-500 ease-in-out" id="carousel">
+                    {% if event.photos.all %}
+                        {% for photo in event.photos.all %}
+                            <img src="{{ photo.image.url }}" alt="Event Photo" class="w-full object-cover h-80">
+                        {% endfor %}
+                    {% else %}
+                        <img src="https://picsum.photos/seed/{{ event.id }}/1200/600" class="w-full h-80 object-cover">
+                    {% endif %}
+                </div>
+                <!-- Controls -->
+                <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-60 text-white px-3 py-1 rounded-full">‹</button>
+                <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-60 text-white px-3 py-1 rounded-full">›</button>
+            </div>
+
+            <!-- Title + Category -->
+            <div>
+                <h1 class="text-4xl font-bold text-gray-900">{{ event.title }}</h1>
+                <span class="inline-block mt-3 bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full">
+                    {{ event.category.name }}
+                </span>
+            </div>
+
+            <!-- Description -->
+            <p class="text-gray-700 text-lg leading-relaxed">
+                {{ event.description }}
+            </p>
+
+            <p class="text-sm text-gray-500">
+                For additional info, contact:
+                <a href="mailto:{{ event.contact_email }}" class="text-indigo-600 hover:underline">{{ event.contact_email }}</a>
+            </p>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="space-y-8">
+
+            <!-- Register Card -->
+            <div class="border rounded-2xl shadow-md p-5 space-y-4">
+                {% if user.is_authenticated %}
+                    {% if registered %}
+                        <button class="w-full bg-green-600 text-white py-2 rounded-xl font-semibold">✓ Registered</button>
+                    {% else %}
+                        <form method="post" action="{% url 'register_event' event.id %}">
+                            {% csrf_token %}
+                            <button class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 rounded-xl font-semibold shadow hover:scale-105 transition">
+                                Register
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'login' %}" class="block w-full text-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 rounded-xl font-semibold shadow hover:scale-105 transition">
+                        Login to Register
+                    </a>
+                {% endif %}
+
+                <div class="text-gray-700 space-y-1 text-sm">
+                    <p><strong>Date:</strong> {{ event.start_date|date:"M d, Y" }}</p>
+                    <p><strong>Time:</strong> {{ event.start_time }} - {{ event.end_time }}</p>
+                    <p><strong>Type:</strong> {{ event.get_event_type_display }}</p>
+                </div>
+
+                <a href="#" class="block text-indigo-600 text-sm hover:underline">➕ Add to calendar</a>
+            </div>
+
+            <!-- Location -->
+            <div class="border rounded-2xl shadow-md p-5">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">📍 Location</h3>
+                <p class="text-gray-600 text-sm">{{ event.location }}</p>
+                {% if event.latitude and event.longitude %}
+                    <iframe src="https://maps.google.com/maps?q={{ event.latitude }},{{ event.longitude }}&z=15&output=embed"
+                            class="w-full h-48 rounded-xl mt-3"></iframe>
+                {% endif %}
+            </div>
+
+            <!-- Organizer -->
+            <div class="border rounded-2xl shadow-md p-5 space-y-1">
+                <h3 class="text-lg font-semibold text-gray-800">👤 Organizer</h3>
+                <p class="text-gray-700">{{ event.organizer_name }}</p>
+                <p class="text-gray-600 text-sm">📞 {{ event.organizer_phone }}</p>
+                <p class="text-gray-600 text-sm">📧 {{ event.organizer_email }}</p>
+            </div>
+
+            <!-- Share -->
+            <div class="border rounded-2xl shadow-md p-5">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">🔗 Share</h3>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-blue-600 hover:scale-110 transition"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-sky-500 hover:scale-110 transition"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="text-pink-600 hover:scale-110 transition"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-red-600 hover:scale-110 transition"><i class="bi bi-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Carousel Script -->
+<script>
+    let currentSlide = 0;
+    function showSlide(index) {
+        const slides = document.querySelectorAll("#carousel img");
+        if (!slides.length) return;
+        if (index >= slides.length) currentSlide = 0;
+        else if (index < 0) currentSlide = slides.length - 1;
+        else currentSlide = index;
+        document.getElementById("carousel").style.transform = `translateX(-${currentSlide * 100}%)`;
+    }
+    function nextSlide() { showSlide(currentSlide + 1); }
+    function prevSlide() { showSlide(currentSlide - 1); }
+</script>
+{% endblock %}

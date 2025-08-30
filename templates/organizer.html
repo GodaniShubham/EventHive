@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Events - EventHive{% endblock %}
+
+{% block content %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<div class="min-h-screen bg-gray-50 py-10">
+  <div class="container mx-auto px-6">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-extrabold text-indigo-700">🎤 My Events</h1>
+      <a href="{% url 'add_event' %}" 
+        class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg font-semibold hover:scale-105 transition">
+        ➕ Add New Event
+      </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-4 mb-8">
+      <select class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
+        <option>Category</option>
+        <option>Music</option>
+        <option>Sports</option>
+        <option>Exhibition</option>
+      </select>
+      <input type="date" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
+      <div class="flex items-center border rounded-lg shadow-sm overflow-hidden">
+        <input type="text" placeholder="Search events..." class="px-4 py-2 w-64 focus:outline-none">
+        <button class="bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700"><i class="bi bi-search"></i></button>
+      </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      {% for event in events %}
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2 duration-500"
+        data-aos="zoom-in" data-aos-duration="800">
+        
+        <!-- Banner -->
+        <div class="relative">
+          <img src="{{ event.banner_image }}" alt="{{ event.title }}" class="w-full h-40 object-cover">
+          <span class="absolute top-2 right-2 px-3 py-1 text-xs font-bold rounded-full 
+            {% if event.is_published %} bg-green-100 text-green-700 {% else %} bg-yellow-100 text-yellow-700 {% endif %}">
+            {% if event.is_published %} Published {% else %} Draft {% endif %}
+          </span>
+        </div>
+
+        <!-- Content -->
+        <div class="p-5">
+          <h3 class="text-lg font-bold text-gray-800">{{ event.title }}</h3>
+          <p class="text-sm text-gray-500 truncate">{{ event.description }}</p>
+          <p class="text-xs text-gray-500 mt-2"><i class="bi bi-calendar-event"></i> {{ event.start_date|date:"M d, Y" }}</p>
+          <p class="text-xs text-gray-500"><i class="bi bi-geo-alt"></i> {{ event.location }}</p>
+          
+          <!-- Buttons -->
+          <div class="mt-4 flex justify-between gap-2">
+            <a href="{% url 'event_detail' event.id %}" class="text-indigo-600 hover:underline text-sm font-medium">View</a>
+            <a href="{% url 'edit_event' event.id %}" class="text-yellow-600 hover:underline text-sm font-medium">Edit</a>
+            <a href="{% url 'delete_event' event.id %}" class="text-red-600 hover:underline text-sm font-medium">Delete</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p class="col-span-4 text-center text-gray-500">You haven’t created any events yet.</p>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex justify-center mt-10">
+      <nav class="inline-flex rounded-lg shadow">
+        {% if events.has_previous %}
+        <a href="?page={{ events.previous_page_number }}" class="px-4 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white rounded-l-lg">←</a>
+        {% endif %}
+
+        {% for num in events.paginator.page_range %}
+          {% if events.number == num %}
+            <span class="px-4 py-2 bg-indigo-600 text-white font-bold">{{ num }}</span>
+          {% elif num > events.number|add:'-2' and num < events.number|add:'2' %}
+            <a href="?page={{ num }}" class="px-4 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white">{{ num }}</a>
+          {% endif %}
+        {% endfor %}
+
+        {% if events.has_next %}
+        <a href="?page={{ events.next_page_number }}" class="px-4 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white rounded-r-lg">→</a>
+        {% endif %}
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init({ once: true });</script>
+{% endblock %}

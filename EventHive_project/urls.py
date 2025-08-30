@@ -6,4 +6,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('EventHive_app.urls')),
     path('home/', TemplateView.as_view(template_name='home.html'), name='home'),
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

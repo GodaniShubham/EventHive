@@ -4,33 +4,41 @@
 {% block title %}Attendee Home - EventHive{% endblock %}
 
 {% block content %}
-<!-- AOS CSS -->
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Filters -->
-    <div class="flex flex-wrap gap-4 mb-8 items-center justify-between">
+    <form method="get" class="flex flex-wrap gap-4 mb-8 items-center justify-between">
         <div class="flex flex-wrap gap-4">
-            <select class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
-                <option>Category</option>
-                <option>Music</option>
-                <option>Sports</option>
-                <option>Exhibition</option>
+            <!-- Category Filter -->
+            <select name="category" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
+                <option value="all">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.name }}" {% if category_filter == cat.name %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+                {% endfor %}
             </select>
-            <input type="date" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
-            <select class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
-                <option>Event Type</option>
-                <option>Free</option>
-                <option>Paid</option>
+
+            <!-- Date Filter -->
+            <input type="date" name="date" value="{{ date_filter }}" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
+
+            <!-- Event Type Filter -->
+            <select name="event_type" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
+                <option value="all">All Types</option>
+                <option value="free" {% if event_type_filter == "free" %}selected{% endif %}>Free</option>
+                <option value="paid" {% if event_type_filter == "paid" %}selected{% endif %}>Paid</option>
             </select>
         </div>
+
+        <!-- Search -->
         <div class="flex items-center border rounded-lg shadow-sm overflow-hidden">
-            <input type="text" placeholder="Search events..." class="px-4 py-2 w-64 focus:outline-none">
-            <button class="bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700">
+            <input type="text" name="search" placeholder="Search events..." value="{{ search_query }}" class="px-4 py-2 w-64 focus:outline-none">
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700">
                 <i class="bi bi-search"></i>
             </button>
         </div>
-    </div>
+    </form>
 
     <!-- Event Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
@@ -38,12 +46,16 @@
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl 
                     transition transform hover:-translate-y-2 duration-500" data-aos="zoom-in" data-aos-duration="1000">
 
-            <!-- Safe image (works for dummy + DB events) -->
-            <img src="{{ event.banner.url|default:event.banner }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+            <!-- Banner -->
+            {% if event.banner_image %}
+            <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+            {% else %}
+            <img src="https://picsum.photos/seed/{{ event.id }}/800/500" alt="dummy" class="w-full h-48 object-cover">
+            {% endif %}
 
             <div class="p-5">
                 <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">
-                    {{ event.category }}
+                    {{ event.category.name }}
                 </span>
                 <h3 class="text-xl font-bold mt-3">{{ event.title }}</h3>
                 <p class="text-gray-600 text-sm mt-1">
@@ -55,6 +67,9 @@
                 <p class="text-gray-500 text-xs">
                     <i class="bi bi-calendar-event"></i>
                     {{ event.start_date|date:"M d, Y" }}
+                </p>
+                <p class="text-gray-500 text-xs">
+                    <i class="bi bi-cash-stack"></i> {{ event.get_event_type_display }}
                 </p>
                 <a href="{% url 'event_detail' event.id %}" class="inline-block mt-4 w-full text-center 
                         bg-gradient-to-r from-indigo-600 to-purple-600 
@@ -93,7 +108,6 @@
     </div>
 </div>
 
-<!-- AOS JS -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
     AOS.init({ once: true });

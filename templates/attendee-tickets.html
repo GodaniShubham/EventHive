@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Attendee Details - EventHive{% endblock %}
+
+{% block content %}
+<!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<div class="min-h-screen bg-gray-50 py-10">
+  <div class="bg-white shadow-2xl rounded-3xl w-full max-w-4xl mx-auto p-10" data-aos="zoom-in" data-aos-duration="1000">
+    
+    <!-- Header -->
+    <h2 class="text-3xl font-extrabold text-indigo-700 text-center mb-8">📝 Attendee Information</h2>
+    <p class="text-center text-gray-500 mb-10">Fill attendee details for each ticket before payment.</p>
+
+    <form method="POST" action="{% url 'make_payment' event.id %}">
+      {% csrf_token %}
+
+      <!-- Example loop (Standard tickets) -->
+      <div class="space-y-10">
+        
+        <!-- Ticket #1 - Standard -->
+        <div class="border rounded-2xl p-6 shadow-md hover:shadow-xl transition" data-aos="fade-up" data-aos-delay="100">
+          <h3 class="text-xl font-bold text-indigo-600 mb-4">🎟 Ticket #1 - Standard</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Left Column -->
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Full Name</label>
+                <input type="text" name="attendee_1_name" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500" required>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Phone</label>
+                <input type="text" name="attendee_1_phone" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500" required>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Email</label>
+                <input type="email" name="attendee_1_email" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500" required>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Gender</label>
+                <select name="attendee_1_gender" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-indigo-500">
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ticket #2 - VIP -->
+        <div class="border rounded-2xl p-6 shadow-md hover:shadow-xl transition" data-aos="fade-up" data-aos-delay="200">
+          <h3 class="text-xl font-bold text-purple-600 mb-4">🎟 Ticket #2 - VIP</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Left -->
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Full Name</label>
+                <input type="text" name="attendee_2_name" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500" required>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Phone</label>
+                <input type="text" name="attendee_2_phone" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500" required>
+              </div>
+            </div>
+
+            <!-- Right -->
+            <div class="space-y-4">
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Email</label>
+                <input type="email" name="attendee_2_email" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500" required>
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-gray-600">Gender</label>
+                <select name="attendee_2_gender" class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500">
+                  <option>Male</option>
+                  <option>Female</option>
+                  <option>Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-between mt-10">
+        <a href="{% url 'book_tickets' event.id %}" class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300">❌ Cancel</a>
+        <button type="submit" 
+          class="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition">
+          💳 Make Payment
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init({ once: true });</script>
+{% endblock %}

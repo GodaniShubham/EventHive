@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="bg-gray-900 min-h-screen text-white p-6">
+    <!-- Title -->
+    <h1 class="text-3xl font-bold mb-6 animate__animated animate__fadeInDown">
+        🧑‍🤝‍🧑 Attendees Details
+    </h1>
+
+    <!-- Filters & Search -->
+    <div class="flex flex-wrap gap-4 items-center justify-between mb-6">
+        <div class="flex gap-4">
+            <select class="px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 hover:border-indigo-500 transition-all animate__animated animate__fadeInLeft">
+                <option>All Genders</option>
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+            <select class="px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 hover:border-indigo-500 transition-all animate__animated animate__fadeInLeft">
+                <option>All Status</option>
+                <option>Attended</option>
+                <option>Not Attended</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-2 animate__animated animate__fadeInRight">
+            <input type="text" placeholder="Search attendees..." class="px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+            <button class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors">
+                🔍
+            </button>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto animate__animated animate__fadeInUp">
+        <table class="min-w-full border border-gray-700 rounded-lg overflow-hidden shadow-lg">
+            <thead class="bg-gray-800">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Name</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Total Guests</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Email</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Phone</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold">Gender</th>
+                </tr>
+            </thead>
+            <tbody class="bg-gray-900 divide-y divide-gray-700">
+                <!-- Example Attendee -->
+                <tr class="hover:bg-gray-800 transition-all transform hover:scale-[1.01]">
+                    <td class="px-6 py-4 font-medium">Priya Sharma<br><span class="text-sm text-gray-400">+ Guest: Marc</span></td>
+                    <td class="px-6 py-4">2</td>
+                    <td class="px-6 py-4">
+                        priya@email.com <br>
+                        <span class="text-sm text-gray-400">marc@odoo.com</span>
+                    </td>
+                    <td class="px-6 py-4">123564789<br><span class="text-sm text-gray-400">2536549852</span></td>
+                    <td class="px-6 py-4">Female</td>
+                </tr>
+                <tr class="hover:bg-gray-800 transition-all transform hover:scale-[1.01]">
+                    <td class="px-6 py-4 font-medium">Arjun Patel</td>
+                    <td class="px-6 py-4">1</td>
+                    <td class="px-6 py-4">arjun@example.com</td>
+                    <td class="px-6 py-4">25463598755</td>
+                    <td class="px-6 py-4">Male</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Animate.css -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+{% endblock %}
