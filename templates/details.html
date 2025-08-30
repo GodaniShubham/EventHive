@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Event Details - EventHive{% endblock %}
+
+{% block content %}
+<!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<div class="bg-white shadow-2xl rounded-3xl w-full max-w-6xl mx-auto overflow-hidden mt-10">
+    
+    <!-- Event Banner -->
+    <div class="relative" data-aos="fade-down" data-aos-duration="1200">
+        <img src="https://imgs.search.brave.com/3ApFH3yysHiHfFQtUfZZJnq6kInWiwnCFv8c629QZw8/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/ZnJlZS1wc2QvbXVz/aWMtZXZlbnQtYmFu/bmVyLXRlbXBsYXRl/LXJldHJvLXN0eWxl/XzIzLTIxNDkwODEx/ODMuanBnP3NlbXQ9/YWlzX2h5YnJpZCZ3/PTc0MCZxPTgw" 
+             alt="Event Banner" 
+             class="w-full h-[400px] object-cover transition-transform duration-500 hover:scale-105">
+        <span class="absolute top-4 left-4 bg-indigo-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg animate-pulse">🎶 Brave Crab</span>
+        <button onclick="copyLink()" class="absolute top-4 right-4 text-white bg-black bg-opacity-40 rounded-full p-3 hover:bg-opacity-70 transition">
+            <i class="bi bi-share-fill text-lg"></i>
+        </button>
+    </div>
+
+    <!-- Event Content -->
+    <div class="p-8 grid grid-cols-3 gap-6">
+        
+        <!-- Left: Main Info -->
+        <div class="col-span-2" data-aos="fade-right" data-aos-duration="1200">
+            <h2 class="text-4xl font-extrabold text-gray-900 mb-3">🎤 Live Music Festival</h2>
+            <p class="text-gray-500 text-sm mb-6 italic">Experience the ultimate music festival of the year!</p>
+            
+            <p class="text-gray-700 leading-relaxed mb-4">
+                Welcome to the <span class="font-bold text-indigo-600">12th edition</span> of our legendary Musical Festival! <br>
+                Bands like <span class="font-semibold">Bar Fighters</span>, <span class="font-semibold">Led Stoppers</span> and <span class="font-semibold">Link Floyd</span> 
+                will give you the concert of a lifetime during this <span class="underline">3-day event</span>. 🎸✨
+            </p>
+            
+            <p class="text-gray-700 leading-relaxed mb-6">
+                Don’t miss the chance to create unforgettable memories with your friends and experience 
+                timeless rock anthems 🔥
+            </p>
+            
+            <div class="flex gap-4">
+                <a href="{% url 'register' %}" 
+                   class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-purple-700 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg transition transform hover:scale-110 duration-300">
+                   🚀 Register Now
+                </a>
+                <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-8 py-3 rounded-xl font-medium shadow transition transform hover:scale-105 duration-300">
+                    ⚠️ Report Spam
+                </button>
+            </div>
+        </div>
+
+        <!-- Right: Sidebar Info -->
+        <div class="col-span-1 space-y-6" data-aos="fade-left" data-aos-duration="1200">
+            
+            <div class="bg-gray-100 rounded-xl p-5 shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="font-semibold text-gray-900 mb-2">📅 Date & Time</h3>
+                <p class="text-sm text-gray-600">Aug 19 - 21, 2024</p>
+                <p class="text-sm text-gray-600">Starts: 5:00 PM</p>
+            </div>
+
+            <div class="bg-gray-100 rounded-xl p-5 shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="font-semibold text-gray-900 mb-2">📍 Location</h3>
+                <p class="text-sm text-gray-600">Rock Arena Stadium, NYC</p>
+                <!-- Google Map -->
+                <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3023.876571726555!2d-74.00601518459363!3d40.71277617933088!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x1234567890abcdef!2sRock%20Arena%20Stadium!5e0!3m2!1sen!2sus!4v1704555555555" 
+                    width="100%" height="150" style="border:0;" allowfullscreen="" loading="lazy" 
+                    class="rounded-lg mt-2"></iframe>
+            </div>
+
+            <div class="bg-gray-100 rounded-xl p-5 shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="font-semibold text-gray-900 mb-2">👤 Organizer</h3>
+                <p class="text-sm text-gray-600">Mark Brown</p>
+                <p class="text-sm text-gray-600"><i class="bi bi-envelope"></i> mark@event.com</p>
+                <p class="text-sm text-gray-600"><i class="bi bi-telephone"></i> +91 98765-43210</p>
+            </div>
+
+            <!-- Share Options -->
+            <div class="bg-gray-100 rounded-xl p-5 shadow-md hover:shadow-xl transition duration-300">
+                <h3 class="font-semibold text-gray-900 mb-3">🔗 Share</h3>
+                <div class="flex gap-3">
+                    <a href="https://facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank"
+                       class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transform hover:scale-110 transition"><i class="bi bi-facebook"></i></a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}" target="_blank"
+                       class="bg-sky-400 hover:bg-sky-500 text-white p-2 rounded-full transform hover:scale-110 transition"><i class="bi bi-twitter"></i></a>
+                    <a href="https://www.instagram.com/" target="_blank"
+                       class="bg-pink-500 hover:bg-pink-600 text-white p-2 rounded-full transform hover:scale-110 transition"><i class="bi bi-instagram"></i></a>
+                    <a href="https://api.whatsapp.com/send?text={{ request.build_absolute_uri }}" target="_blank"
+                       class="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transform hover:scale-110 transition"><i class="bi bi-whatsapp"></i></a>
+                    <button onclick="copyLink()" 
+                            class="bg-gray-700 hover:bg-black text-white p-2 rounded-full transform hover:scale-110 transition">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Copy Link JS -->
+<script>
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("✅ Link copied to clipboard!");
+    });
+}
+</script>
+
+<!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({ once: true });
+</script>
+{% endblock %}

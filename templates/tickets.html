@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Tickets - EventHive{% endblock %}
+
+{% block content %}
+<!-- AOS CSS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-10">
+  <div class="bg-white shadow-2xl rounded-3xl w-full max-w-2xl p-8" data-aos="zoom-in" data-aos-duration="1000">
+    
+    <!-- Header -->
+    <h2 class="text-3xl font-extrabold text-indigo-700 text-center mb-8">🎟 Book Your Tickets</h2>
+
+    <!-- Tickets List -->
+    <div class="space-y-6">
+      
+      <!-- Standard Ticket -->
+      <div class="flex items-center justify-between bg-gray-100 rounded-xl p-5 shadow hover:shadow-lg transition">
+        <div>
+          <h3 class="text-xl font-bold text-gray-800">Standard</h3>
+          <p class="text-sm text-gray-500">Sales ends on <span class="font-medium">01/09/2025 20:00</span></p>
+        </div>
+        <div class="flex items-center gap-6">
+          <p class="text-lg font-semibold text-indigo-700">₹ 0.00</p>
+          <div class="flex items-center border rounded-lg overflow-hidden">
+            <button onclick="updateQty('standard', -1)" class="px-3 py-1 bg-gray-200 hover:bg-gray-300">-</button>
+            <input id="standardQty" type="text" value="0" readonly class="w-12 text-center border-l border-r bg-white">
+            <button onclick="updateQty('standard', 1)" class="px-3 py-1 bg-gray-200 hover:bg-gray-300">+</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIP Ticket -->
+      <div class="flex items-center justify-between bg-gray-100 rounded-xl p-5 shadow hover:shadow-lg transition">
+        <div>
+          <h3 class="text-xl font-bold text-gray-800">VIP</h3>
+          <p class="text-sm text-gray-500">Sales ends on <span class="font-medium">05/09/2025 23:00</span></p>
+        </div>
+        <div class="flex items-center gap-6">
+          <p class="text-lg font-semibold text-indigo-700">₹ 500.00</p>
+          <div class="flex items-center border rounded-lg overflow-hidden">
+            <button onclick="updateQty('vip', -1)" class="px-3 py-1 bg-gray-200 hover:bg-gray-300">-</button>
+            <input id="vipQty" type="text" value="0" readonly class="w-12 text-center border-l border-r bg-white">
+            <button onclick="updateQty('vip', 1)" class="px-3 py-1 bg-gray-200 hover:bg-gray-300">+</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Buttons -->
+    <div class="flex justify-between mt-10">
+      <a href="{% url 'home' %}" class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300">Close</a>
+      <button onclick="registerTickets()" 
+        class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition">
+        ✅ Register
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- JS -->
+<script>
+function updateQty(type, change) {
+  const input = document.getElementById(type + "Qty");
+  let value = parseInt(input.value) || 0;
+  value = Math.max(0, value + change); // Prevent negative qty
+  input.value = value;
+}
+
+function registerTickets() {
+  const standard = document.getElementById("standardQty").value;
+  const vip = document.getElementById("vipQty").value;
+
+  if (standard == 0 && vip == 0) {
+    alert("⚠️ Please select at least one ticket.");
+    return;
+  }
+
+  alert(`🎟 Tickets booked!\nStandard: ${standard}\nVIP: ${vip}`);
+  // Yaha backend POST call karna hoga booking confirm karne ke liye
+}
+</script>
+
+<!-- AOS JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init({ once: true });</script>
+
+{% endblock %}
