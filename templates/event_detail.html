@@ -12,22 +12,28 @@
         <span class="text-gray-800 font-medium">{{ event.title }}</span>
     </nav>
 
+    <!-- Main Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-        
-        <!-- Left Section -->
+
+        <!-- Left Section (Banner + Info) -->
         <div class="md:col-span-2 space-y-8">
 
-            <!-- Banner Carousel -->
+            <!-- Banner / Carousel -->
             <div class="relative w-full overflow-hidden rounded-2xl shadow-lg">
                 <div class="flex transition-transform duration-500 ease-in-out" id="carousel">
-                    {% if event.photos.all %}
+                    {% if event.banner_image %}
+                        <img src="{{ event.banner_image.url }}" alt="Banner Image" class="w-full object-cover h-80">
+                    {% endif %}
+
+                    {% if event.photos.exists %}
                         {% for photo in event.photos.all %}
                             <img src="{{ photo.image.url }}" alt="Event Photo" class="w-full object-cover h-80">
                         {% endfor %}
-                    {% else %}
+                    {% elif not event.banner_image %}
                         <img src="https://picsum.photos/seed/{{ event.id }}/1200/600" class="w-full h-80 object-cover">
                     {% endif %}
                 </div>
+
                 <!-- Controls -->
                 <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-60 text-white px-3 py-1 rounded-full">‹</button>
                 <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 bg-gray-800 bg-opacity-60 text-white px-3 py-1 rounded-full">›</button>
@@ -52,24 +58,21 @@
             </p>
         </div>
 
-        <!-- Right Sidebar -->
+        <!-- Right Sidebar (Booking + Details) -->
         <div class="space-y-8">
 
-            <!-- Register Card -->
+            <!-- Book Tickets -->
             <div class="border rounded-2xl shadow-md p-5 space-y-4">
                 {% if user.is_authenticated %}
-                    {% if registered %}
-                        <button class="w-full bg-green-600 text-white py-2 rounded-xl font-semibold">✓ Registered</button>
-                    {% else %}
-                        <form method="post" action="{% url 'register_event' event.id %}">
-                            {% csrf_token %}
-                            <button class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 rounded-xl font-semibold shadow hover:scale-105 transition">
-                                Register
-                            </button>
-                        </form>
-                    {% endif %}
+                    <a href="{% url 'book_tickets' event.id %}" 
+                       class="block w-full text-center bg-gradient-to-r from-indigo-600 to-purple-600 
+                              text-white py-2 rounded-xl font-semibold shadow hover:scale-105 transition">
+                        Book Tickets
+                    </a>
                 {% else %}
-                    <a href="{% url 'login' %}" class="block w-full text-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-2 rounded-xl font-semibold shadow hover:scale-105 transition">
+                    <a href="{% url 'login' %}" 
+                       class="block w-full text-center bg-gradient-to-r from-indigo-600 to-purple-600 
+                              text-white py-2 rounded-xl font-semibold shadow hover:scale-105 transition">
                         Login to Register
                     </a>
                 {% endif %}
@@ -114,6 +117,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Carousel Script -->
 <script>

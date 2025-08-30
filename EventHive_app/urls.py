@@ -4,12 +4,15 @@ from . import views
 urlpatterns = [
     # Authentication
     path("register/", views.register, name="register"),
+    path('profile/', views.profile_view, name="profile"),
+    path("profile_page/", views.profile_page, name="profile"),
     path("login/", views.login_view, name="login"),
     path("logout/", views.logout_view, name="logout"),
     path("verify/<int:user_id>/", views.verify_otp, name="verify_otp"),
     path('' , views.home , name="home"),
     # Attendee
     path("ahome/", views.attendee_home, name="attendee_home"),
+    path("event/<int:event_id>/register/", views.register_event, name="register_event"),
     path("event/<int:event_id>/", views.event_detail, name="event_detail"),
     path("tickets/<int:event_id>/", views.book_tickets, name="book_tickets"),
     path("tickets/register/<int:event_id>/", views.register_tickets, name="register_tickets"),

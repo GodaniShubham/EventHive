@@ -133,27 +133,42 @@ def home(request):
 @login_required(login_url="login")
 def event_detail(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    return render(request, "event_detail.html", {"event": event})
+    tickets = Ticket.objects.filter(event=event)
+    registered = Booking.objects.filter(event=event, user=request.user).exists()
+
+    return render(request, "event_detail.html", {
+        "event": event,
+        "tickets": tickets,
+        "registered": registered
+    })
 
 
-# ------------------- Attendee Home -------------------
 @login_required(login_url="login")
+def profile_view(request):
+    return render(request, "profile.html", {"user": request.user})
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.shortcuts import render
+from .models import Event, Category
+
 def attendee_home(request):
     events = Event.objects.all()
     categories = Category.objects.all()
 
-    category_filter = request.GET.get("category")
-    date_filter = request.GET.get("date")
-    event_type_filter = request.GET.get("event_type")
-    search_query = request.GET.get("search")
+    # --- Get filter values ---
+    category_filter = request.GET.get("category", "all")
+    date_filter = request.GET.get("date", "")
+    event_type_filter = request.GET.get("event_type", "all")
+    search_query = request.GET.get("search", "")
 
-    if category_filter and category_filter != "all":
+    # --- Apply filters ---
+    if category_filter != "all":
         events = events.filter(category__name__iexact=category_filter)
 
     if date_filter:
         events = events.filter(start_date=date_filter)
 
-    if event_type_filter and event_type_filter != "all":
+    if event_type_filter != "all":
         events = events.filter(event_type__iexact=event_type_filter)
 
     if search_query:
@@ -163,19 +178,29 @@ def attendee_home(request):
             Q(location__icontains=search_query)
         )
 
-    paginator = Paginator(events, 6)
+    # --- Pagination ---
+    paginator = Paginator(events, 6)  # 6 events per page
     page_number = request.GET.get("page")
     events_page = paginator.get_page(page_number)
 
+    # --- Preserve filters in pagination links ---
+    query_params = request.GET.copy()
+    if "page" in query_params:
+        query_params.pop("page")  # remove page to append later
+
     return render(request, "attendeehome.html", {
         "events": events_page,
-        "categories": categories,create_event
-        
+        "categories": categories,
         "category_filter": category_filter,
         "date_filter": date_filter,
         "event_type_filter": event_type_filter,
         "search_query": search_query,
+        "query_params": query_params.urlencode(),  # for pagination links
     })
+
+
+def profile_page(request):
+    return render(request, "profile_page.html")
 
 
 # ------------------- Ticket Booking Flow -------------------
@@ -391,3 +416,16 @@ def attendee_details(request, event_id, booking_id):
         "attendee": booking.user,
         "ticket": booking.ticket,
     })
+
+@login_required(login_url="login")
+def register_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    # Check if already registered
+    if Booking.objects.filter(event=event, user=request.user).exists():
+        messages.info(request, "⚠️ You are already registered for this event.")
+        return redirect("event_detail", event_id=event.id)
+
+    # ✅ Instead of directly creating a booking, send user to ticket booking page
+    return redirect("book_tickets", event_id=event.id)
+

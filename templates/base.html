@@ -17,19 +17,32 @@
         </a>
 
         <!-- Nav Links (Desktop) -->
-        <div class="hidden md:flex items-center space-x-8 font-semibold">
-            <a href="{% url 'home' %}" class="hover:text-indigo-600 transition">Home</a>
-            <a href="{% url 'attendee_home' %}" class="hover:text-indigo-600 transition">Events</a>
+        <!-- Nav Links (Desktop) -->
+<div class="hidden md:flex items-center space-x-8 font-semibold">
+    <a href="{% url 'home' %}" class="hover:text-indigo-600 transition">Home</a>
+    <a href="{% url 'attendee_home' %}" class="hover:text-indigo-600 transition">Events</a>
 
-            {% if user.is_organizer %}
-                <a href="{% url 'logout' %}" class="hover:text-red-600 transition">Logout</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="hover:text-indigo-600 transition">Login</a>
-                <a href="{% url 'register' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-md">
-                    Sign Up
-                </a>
-            {% endif %}
+    {% if user.is_authenticated %}
+        <!-- Profile Dropdown -->
+        <div class="relative group">
+            <!-- Profile Icon -->
+            <button class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold focus:outline-none">
+                {{ user.username|first|upper }}
+            </button>
+
+            <!-- Dropdown -->
+            <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition">
+                <a href="{% url 'profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">👤 View Profile</a>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">🚪 Logout</a>
+            </div>
         </div>
+    {% else %}
+        <a href="{% url 'login' %}" class="hover:text-indigo-600 transition">Login</a>
+        <a href="{% url 'register' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-md">
+            Sign Up
+        </a>
+    {% endif %}
+</div>
 
         <!-- Mobile Menu Button -->
         <button class="md:hidden text-gray-600 focus:outline-none" id="menu-btn">
@@ -38,17 +51,20 @@
     </div>
 
     <!-- Mobile Menu -->
-    <div class="hidden md:hidden px-6 pb-4 space-y-2 font-semibold" id="mobile-menu">
-        <a href="{% url 'home' %}" class="block py-2 hover:text-indigo-600">Home</a>
-        <a href="{% url 'attendee_home' %}" class="block py-2 hover:text-indigo-600">Events</a>
+    <!-- Mobile Menu -->
+<div class="hidden md:hidden px-6 pb-4 space-y-2 font-semibold" id="mobile-menu">
+    <a href="{% url 'home' %}" class="block py-2 hover:text-indigo-600">Home</a>
+    <a href="{% url 'attendee_home' %}" class="block py-2 hover:text-indigo-600">Events</a>
 
-        {% if user.is_organizer %}
-            <a href="{% url 'logout' %}" class="block py-2 hover:text-red-600">Logout</a>
-        {% else %}
-            <a href="{% url 'login' %}" class="block py-2 hover:text-indigo-600">Login</a>
-            <a href="{% url 'register' %}" class="block py-2 bg-indigo-600 text-white rounded-lg px-4 hover:bg-indigo-700">Sign Up</a>
-        {% endif %}
-    </div>
+    {% if user.is_authenticated %}
+        <a href="{% url 'profile' %}" class="block py-2 hover:text-indigo-600">👤 View Profile</a>
+        <a href="{% url 'logout' %}" class="block py-2 hover:text-red-600">🚪 Logout</a>
+    {% else %}
+        <a href="{% url 'login' %}" class="block py-2 hover:text-indigo-600">Login</a>
+        <a href="{% url 'register' %}" class="block py-2 bg-indigo-600 text-white rounded-lg px-4 hover:bg-indigo-700">Sign Up</a>
+    {% endif %}
+</div>
+
 </nav>
 
     <!-- Content -->
