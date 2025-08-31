@@ -64,10 +64,18 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.title} ({self.start_date})"
 
-    # ✅ Helper property (not a DB field)
+    # ✅ Helper property (use in templates, not in queries)
     @property
     def is_published(self):
         return self.status == "published"
+
+    # ✅ Custom manager for ORM queries
+    class PublishedManager(models.Manager):
+        def get_queryset(self):
+            return super().get_queryset().filter(status="published")
+
+    objects = models.Manager()  # default manager
+    published = PublishedManager()  # custom manager for published events
 
 
 # ------------------- Ticket Model -------------------
