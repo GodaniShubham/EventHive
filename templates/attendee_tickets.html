@@ -2,150 +2,113 @@
 {% block title %}Attendee Details - EventHive{% endblock %}
 
 {% block content %}
-<!-- ❌ Ye div hata do jo sirf gradient ke liye tha -->
-{# <div class="fixed inset-0 bg-gradient-to-br from-gray-50 via-green-50 to-teal-100 -z-10"></div> #}
-
-<!-- ✅ Full Page Gradient via Tailwind -->
-<div class="min-h-screen py-16 bg-gradient-to-br from-gray-50 via-green-50 to-teal-100">
-  <div class="bg-white/90 backdrop-blur-md p-10 w-full max-w-6xl mx-auto shadow-2xl rounded-3xl border border-gray-200"
-       data-aos="fade-up" data-aos-duration="1200">
+<div class="py-12 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+  <div class="bg-white p-10 w-full max-w-5xl mx-auto shadow-2xl rounded-3xl border border-gray-200" 
+       data-aos="fade-up" data-aos-duration="1000">
 
     <!-- Heading -->
-    <div class="text-center mb-14">
-      <h2 class="text-5xl font-extrabold bg-gradient-to-r from-teal-600 to-green-500 bg-clip-text text-transparent"
-          data-aos="zoom-in" data-aos-duration="1000">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-teal-600 to-green-500 bg-clip-text text-transparent"
+          data-aos="zoom-in">
         📝 Attendee Information
       </h2>
-      <p class="text-gray-600 mt-4 text-lg font-medium" data-aos="fade-up" data-aos-delay="300">
+      <p class="text-gray-600 mt-4 text-lg" data-aos="fade-up" data-aos-delay="200">
         Fill in attendee details for each ticket before payment 🚀
       </p>
     </div>
 
     <!-- Form -->
-    <form id="attendeeForm" method="POST" action="{% url 'make_payment' event.id %}" class="space-y-14">
+    <form method="POST" action="{% url 'payment_page' event.id %}" class="space-y-12">
       {% csrf_token %}
 
-      <!-- Standard Tickets -->
-      {% for i in tickets.standard %}
-      <div class="relative border-l-[6px] border-teal-500 rounded-2xl p-8 shadow-lg bg-gradient-to-r from-white via-gray-50 to-teal-50">
-        <span class="absolute -top-4 left-6 bg-teal-500 text-white px-4 py-1 rounded-full shadow-md text-sm animate-bounce">
-          Standard
-        </span>
-        <h3 class="text-2xl font-bold text-teal-600 mb-6 flex items-center gap-2">
-          🎟 Ticket #{{ forloop.counter }}
-        </h3>
+      <!-- Standard Ticket -->
+      <div class="relative border-l-[6px] border-teal-500 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 bg-gradient-to-r from-white to-gray-50"
+           data-aos="fade-right" data-aos-delay="300">
+        <span class="absolute -top-4 left-6 bg-teal-500 text-white px-4 py-1 rounded-full shadow-md text-sm">Standard</span>
+        <h3 class="text-2xl font-bold text-teal-600 mb-6">🎟 Ticket #1</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-5">
             <div>
               <label class="block text-sm font-semibold text-gray-700">Full Name</label>
-              <input type="text" name="attendee_{{ forloop.counter }}_name" required
-                     class="rounded-xl border px-4 py-3 w-full focus:ring-4 focus:ring-teal-400">
+              <input type="text" name="attendee_1_name" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500" required>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700">Phone</label>
-              <input type="text" name="attendee_{{ forloop.counter }}_phone" required
-                     class="rounded-xl border px-4 py-3 w-full focus:ring-4 focus:ring-teal-400">
+              <input type="text" name="attendee_1_phone" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500" required>
             </div>
           </div>
           <div class="space-y-5">
             <div>
               <label class="block text-sm font-semibold text-gray-700">Email</label>
-              <input type="email" name="attendee_{{ forloop.counter }}_email" required
-                     class="rounded-xl border px-4 py-3 w-full focus:ring-4 focus:ring-teal-400">
+              <input type="email" name="attendee_1_email" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500" required>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700">Gender</label>
-              <select name="attendee_{{ forloop.counter }}_gender" class="rounded-xl border px-4 py-3 w-full">
+              <select name="attendee_1_gender" 
+                      class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500">
                 <option>Male</option>
                 <option>Female</option>
                 <option>Other</option>
               </select>
             </div>
-            <input type="hidden" name="attendee_{{ forloop.counter }}_ticket_type" value="Standard">
+            <input type="hidden" name="attendee_1_ticket_type" value="Standard">
           </div>
         </div>
       </div>
-      {% endfor %}
 
-      <!-- VIP Tickets -->
-      {% for i in tickets.vip %}
-      <div class="relative border-l-[6px] border-yellow-500 rounded-2xl p-8 shadow-lg bg-gradient-to-r from-white via-gray-50 to-yellow-50">
-        <span class="absolute -top-4 left-6 bg-yellow-500 text-white px-4 py-1 rounded-full shadow-md text-sm animate-pulse">
-          VIP
-        </span>
-        <h3 class="text-2xl font-bold text-yellow-600 mb-6 flex items-center gap-2">
-          🌟 Ticket #{{ forloop.counter|add:tickets.standard|length }}
-        </h3>
+      <!-- VIP Ticket -->
+      <div class="relative border-l-[6px] border-yellow-500 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 bg-gradient-to-r from-white to-gray-50"
+           data-aos="fade-left" data-aos-delay="500">
+        <span class="absolute -top-4 left-6 bg-yellow-500 text-white px-4 py-1 rounded-full shadow-md text-sm">VIP</span>
+        <h3 class="text-2xl font-bold text-yellow-600 mb-6">🎟 Ticket #2</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div class="space-y-5">
             <div>
               <label class="block text-sm font-semibold text-gray-700">Full Name</label>
-              <input type="text" name="attendee_{{ forloop.counter|add:tickets.standard|length }}_name" required
-                     class="rounded-xl border px-4 py-3 w-full focus:ring-4 focus:ring-yellow-400">
+              <input type="text" name="attendee_2_name" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500" required>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700">Phone</label>
-              <input type="text" name="attendee_{{ forloop.counter|add:tickets.standard|length }}_phone" required
-                     class="rounded-xl border px-4 py-3 w-full focus:ring-4 focus:ring-yellow-400">
+              <input type="text" name="attendee_2_phone" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500" required>
             </div>
           </div>
           <div class="space-y-5">
             <div>
               <label class="block text-sm font-semibold text-gray-700">Email</label>
-              <input type="email" name="attendee_{{ forloop.counter|add:tickets.standard|length }}_email" required
-                     class="rounded-xl border px-4 py-3 w-full focus:ring-4 focus:ring-yellow-400">
+              <input type="email" name="attendee_2_email" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500" required>
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700">Gender</label>
-              <select name="attendee_{{ forloop.counter|add:tickets.standard|length }}_gender" class="rounded-xl border px-4 py-3 w-full">
+              <select name="attendee_2_gender" 
+                      class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500">
                 <option>Male</option>
                 <option>Female</option>
                 <option>Other</option>
               </select>
             </div>
-            <input type="hidden" name="attendee_{{ forloop.counter|add:tickets.standard|length }}_ticket_type" value="VIP">
+            <input type="hidden" name="attendee_2_ticket_type" value="VIP">
           </div>
         </div>
       </div>
-      {% endfor %}
 
       <!-- Buttons -->
-      <div class="flex justify-between items-center mt-16">
+      <div class="flex justify-between items-center mt-12" data-aos="zoom-in" data-aos-delay="700">
         <a href="{% url 'book_tickets' event.id %}" 
-           class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300">
+           class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300 transition transform hover:-translate-y-1">
           ❌ Cancel
         </a>
-        <button type="button" id="payBtn"
-                class="px-10 py-4 bg-gradient-to-r from-teal-600 to-green-500 text-white text-lg font-semibold 
-                       rounded-xl shadow-lg hover:scale-110 active:scale-95 transition duration-300 animate-pulse">
+        <button type="submit" 
+                class="px-10 py-4 bg-gradient-to-r from-teal-600 to-green-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition transform duration-300">
           💳 Make Payment
         </button>
       </div>
     </form>
   </div>
 </div>
-
-<!-- Payment Modal -->
-<div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center z-50">
-  <div class="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-md">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Scan to Pay</h2>
-    <img src="https://i.ibb.co/7rBKwYg/gpay-qr.png" alt="Google Pay QR" class="mx-auto w-60 h-60 shadow-lg rounded-lg">
-    <p class="mt-4 text-gray-600">Use Google Pay / PhonePe / Paytm to scan and pay</p>
-    <button onclick="closeModal()" class="mt-6 px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700">✅ Done</button>
-  </div>
-</div>
-
-<script>
-  const payBtn = document.getElementById("payBtn");
-  const modal = document.getElementById("paymentModal");
-
-  payBtn.addEventListener("click", function() {
-    modal.classList.remove("hidden");
-  });
-
-  function closeModal() {
-    modal.classList.add("hidden");
-    document.getElementById("attendeeForm").submit();
-  }
-</script>
 {% endblock %}
