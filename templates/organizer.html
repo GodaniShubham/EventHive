@@ -5,61 +5,123 @@
 
 {% block content %}
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="min-h-screen bg-gray-50 py-10">
+<div class="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 py-14">
   <div class="container mx-auto px-6">
 
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-extrabold text-indigo-700">🎤 My Events</h1>
-      <a href="{% url 'add_event' %}" 
-        class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg font-semibold hover:scale-105 transition">
-        ➕ Add New Event
+    <div class="flex justify-between items-center mb-12">
+      <h1 class="text-4xl font-extrabold text-indigo-900 drop-shadow-lg">🎤 My Events</h1>
+      <a href="{% url 'create_event' %}" 
+         class="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white px-8 py-3 rounded-2xl shadow-lg font-bold hover:scale-110 hover:shadow-xl transition transform">
+        + Create Event
       </a>
     </div>
 
+    <!-- Analytics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-14">
+
+      <!-- Total Events -->
+      <div class="p-6 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg flex items-center gap-5 hover:scale-105 transition transform" data-aos="fade-up" data-aos-duration="700">
+        <div class="p-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md">
+          <i class="bi bi-calendar-event text-2xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Total Events</p>
+          <h2 class="text-3xl font-extrabold text-gray-900 counter" data-target="{{ total_events }}">0</h2>
+        </div>
+      </div>
+
+      <!-- Published -->
+      <div class="p-6 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg flex items-center gap-5 hover:scale-105 transition transform" data-aos="fade-up" data-aos-duration="800">
+        <div class="p-3 rounded-full bg-gradient-to-r from-green-400 to-green-600 text-white shadow-md">
+          <i class="bi bi-check-circle text-2xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Published</p>
+          <h2 class="text-3xl font-extrabold text-gray-900 counter" data-target="{{ published_events }}">0</h2>
+        </div>
+      </div>
+
+      <!-- Draft -->
+      <div class="p-6 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg flex items-center gap-5 hover:scale-105 transition transform" data-aos="fade-up" data-aos-duration="900">
+        <div class="p-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-md">
+          <i class="bi bi-hourglass-split text-2xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Draft</p>
+          <h2 class="text-3xl font-extrabold text-gray-900 counter" data-target="{{ draft_events }}">0</h2>
+        </div>
+      </div>
+
+      <!-- Tickets Sold -->
+      <div class="p-6 bg-white/80 backdrop-blur-xl rounded-2xl shadow-lg flex items-center gap-5 hover:scale-105 transition transform" data-aos="fade-up" data-aos-duration="1000">
+        <div class="p-3 rounded-full bg-gradient-to-r from-pink-400 to-red-500 text-white shadow-md">
+          <i class="bi bi-ticket-perforated text-2xl"></i>
+        </div>
+        <div>
+          <p class="text-sm text-gray-500">Tickets Sold</p>
+          <h2 class="text-3xl font-extrabold text-gray-900 counter" data-target="{{ tickets_sold }}">0</h2>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Growth Chart -->
+    <div class="bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl p-8 mb-16" data-aos="zoom-in" data-aos-duration="1000">
+      <h2 class="text-xl font-bold text-gray-800 mb-5">📊 Events Growth (Last 6 Months)</h2>
+      <canvas id="eventsChart" height="120"></canvas>
+    </div>
+
     <!-- Filters -->
-    <div class="flex flex-wrap gap-4 mb-8">
-      <select class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
+    <div class="flex flex-wrap gap-4 mb-12 bg-white/70 backdrop-blur-md border border-gray-200 p-6 rounded-2xl shadow-xl">
+      <select class="px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 transition">
         <option>Category</option>
         <option>Music</option>
         <option>Sports</option>
         <option>Exhibition</option>
       </select>
-      <input type="date" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
-      <div class="flex items-center border rounded-lg shadow-sm overflow-hidden">
-        <input type="text" placeholder="Search events..." class="px-4 py-2 w-64 focus:outline-none">
-        <button class="bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700"><i class="bi bi-search"></i></button>
+      <input type="date" 
+             class="px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 transition">
+      <div class="flex items-center border border-gray-300 rounded-xl shadow-sm overflow-hidden w-80">
+        <input type="text" placeholder="Search events..." 
+               class="px-4 py-2 w-full focus:outline-none text-gray-700">
+        <button class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 hover:opacity-90 transition"><i class="bi bi-search"></i></button>
       </div>
     </div>
 
     <!-- Events Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
       {% for event in events %}
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition transform hover:-translate-y-2 duration-500"
-        data-aos="zoom-in" data-aos-duration="800">
+      <div class="bg-white/80 backdrop-blur-xl border border-gray-100 rounded-3xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-3 hover:scale-105 duration-500 overflow-hidden"
+           data-aos="fade-up" data-aos-duration="900">
         
         <!-- Banner -->
         <div class="relative">
-          <img src="{{ event.banner_image }}" alt="{{ event.title }}" class="w-full h-40 object-cover">
-          <span class="absolute top-2 right-2 px-3 py-1 text-xs font-bold rounded-full 
-            {% if event.is_published %} bg-green-100 text-green-700 {% else %} bg-yellow-100 text-yellow-700 {% endif %}">
-            {% if event.is_published %} Published {% else %} Draft {% endif %}
+          <img src="{{ event.banner_image }}" alt="{{ event.title }}" 
+               class="w-full h-52 object-cover rounded-t-3xl">
+          <span class="absolute top-3 right-3 px-4 py-1 text-xs font-semibold rounded-full shadow-lg
+            {% if event.is_published %} bg-gradient-to-r from-green-400 to-green-600 text-white {% else %} bg-gradient-to-r from-yellow-300 to-yellow-500 text-gray-900 {% endif %}">
+            {% if event.is_published %} ✅ Published {% else %} ⏳ Draft {% endif %}
           </span>
         </div>
 
         <!-- Content -->
-        <div class="p-5">
-          <h3 class="text-lg font-bold text-gray-800">{{ event.title }}</h3>
-          <p class="text-sm text-gray-500 truncate">{{ event.description }}</p>
-          <p class="text-xs text-gray-500 mt-2"><i class="bi bi-calendar-event"></i> {{ event.start_date|date:"M d, Y" }}</p>
-          <p class="text-xs text-gray-500"><i class="bi bi-geo-alt"></i> {{ event.location }}</p>
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-900 truncate">{{ event.title }}</h3>
+          <p class="text-sm text-gray-600 line-clamp-2 mt-2">{{ event.description }}</p>
+          <p class="text-xs text-gray-500 mt-4 flex items-center gap-1"><i class="bi bi-calendar-event"></i> {{ event.start_date|date:"M d, Y" }}</p>
+          <p class="text-xs text-gray-500 flex items-center gap-1"><i class="bi bi-geo-alt"></i> {{ event.location }}</p>
           
           <!-- Buttons -->
-          <div class="mt-4 flex justify-between gap-2">
-            <a href="{% url 'event_detail' event.id %}" class="text-indigo-600 hover:underline text-sm font-medium">View</a>
-            <a href="{% url 'edit_event' event.id %}" class="text-yellow-600 hover:underline text-sm font-medium">Edit</a>
-            <a href="{% url 'delete_event' event.id %}" class="text-red-600 hover:underline text-sm font-medium">Delete</a>
+          <div class="mt-6 flex justify-between gap-3">
+            <a href="{% url 'event_detail' event.id %}" 
+               class="flex-1 text-center px-3 py-2 text-sm font-medium bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-700 rounded-lg hover:from-indigo-200 hover:to-indigo-300 transition">View</a>
+            <a href="{% url 'edit_event' event.id %}" 
+               class="flex-1 text-center px-3 py-2 text-sm font-medium bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-700 rounded-lg hover:from-yellow-200 hover:to-yellow-300 transition">Edit</a>
+            <a href="{% url 'delete_event' event.id %}" 
+               class="flex-1 text-center px-3 py-2 text-sm font-medium bg-gradient-to-r from-red-100 to-red-200 text-red-700 rounded-lg hover:from-red-200 hover:to-red-300 transition">Delete</a>
           </div>
         </div>
       </div>
@@ -69,22 +131,24 @@
     </div>
 
     <!-- Pagination -->
-    <div class="flex justify-center mt-10">
-      <nav class="inline-flex rounded-lg shadow">
+    <div class="flex justify-center mt-16">
+      <nav class="flex gap-2">
         {% if events.has_previous %}
-        <a href="?page={{ events.previous_page_number }}" class="px-4 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white rounded-l-lg">←</a>
+        <a href="?page={{ events.previous_page_number }}" 
+           class="px-4 py-2 bg-gray-200 rounded-full hover:bg-indigo-600 hover:text-white transition">←</a>
         {% endif %}
 
         {% for num in events.paginator.page_range %}
           {% if events.number == num %}
-            <span class="px-4 py-2 bg-indigo-600 text-white font-bold">{{ num }}</span>
+            <span class="px-4 py-2 bg-indigo-600 text-white rounded-full font-bold shadow-md">{{ num }}</span>
           {% elif num > events.number|add:'-2' and num < events.number|add:'2' %}
-            <a href="?page={{ num }}" class="px-4 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white">{{ num }}</a>
+            <a href="?page={{ num }}" class="px-4 py-2 bg-gray-100 rounded-full hover:bg-indigo-600 hover:text-white transition">{{ num }}</a>
           {% endif %}
         {% endfor %}
 
         {% if events.has_next %}
-        <a href="?page={{ events.next_page_number }}" class="px-4 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white rounded-r-lg">→</a>
+        <a href="?page={{ events.next_page_number }}" 
+           class="px-4 py-2 bg-gray-200 rounded-full hover:bg-indigo-600 hover:text-white transition">→</a>
         {% endif %}
       </nav>
     </div>
@@ -92,5 +156,50 @@
 </div>
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-<script>AOS.init({ once: true });</script>
+<script>
+  AOS.init({ once: true });
+
+  // Counter Animation
+  const counters = document.querySelectorAll('.counter');
+  counters.forEach(counter => {
+    const updateCount = () => {
+      const target = +counter.getAttribute('data-target');
+      const count = +counter.innerText;
+      const increment = Math.ceil(target / 100);
+      if(count < target) {
+        counter.innerText = count + increment;
+        setTimeout(updateCount, 30);
+      } else {
+        counter.innerText = target;
+      }
+    };
+    updateCount();
+  });
+
+  // Chart.js Example (Events Growth)
+  const ctx = document.getElementById('eventsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ months|safe }}, // e.g. ["Apr","May","Jun","Jul","Aug","Sep"]
+      datasets: [{
+        label: 'Events Created',
+        data: {{ events_growth|safe }}, // e.g. [5, 8, 12, 6, 10, 15]
+        fill: true,
+        borderColor: 'rgba(99, 102, 241, 1)',
+        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+        tension: 0.4,
+        borderWidth: 3,
+        pointBackgroundColor: 'rgba(99, 102, 241, 1)'
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }},
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
 {% endblock %}

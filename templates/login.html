@@ -31,10 +31,13 @@
             background-color: #0b8276;
             border-color: #0b8276;
         }
+        .form-control:focus {
+            border-color: #0d9488;
+            box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.25);
+        }
     </style>
 </head>
 <body>
-
     {% if messages %}
         <div class="container mx-auto mt-4">
             {% for message in messages %}
@@ -61,16 +64,17 @@
                     <label class="block text-gray-700 font-medium mb-2">Password</label>
                     <input type="password" name="password" placeholder="Enter your password" class="form-control focus:ring-2 focus:ring-teal-500 rounded-lg px-3 py-2 w-full" required>
                 </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 font-medium mb-2">Role</label>
+                    <select name="role" class="form-control focus:ring-2 focus:ring-teal-500 rounded-lg px-3 py-2 w-full" required>
+                        <option value="attendee">Normal User</option>
+                        <option value="organizer">Organizer</option>
+                    </select>
+                </div>
                 <button type="submit" class="w-full btn-primary text-white font-semibold py-3 rounded-lg shadow-md transition">Login</button>
             </form>
-<!-- 
-            <div class="my-5 flex items-center">
-                <hr class="flex-grow border-gray-300">
-                <span class="mx-3 text-gray-400 text-sm">OR</span>
-                <hr class="flex-grow border-gray-300">
-            </div> -->
 
-            <p class="text-center text-sm text-gray-600">
+            <p class="text-center text-sm text-gray-600 mt-6">
                 Don’t have an account? <a href="{% url 'register' %}" class="text-teal-600 font-semibold hover:underline">Register</a>
             </p>
         </div>

@@ -50,13 +50,17 @@
     </div>
 
     <!-- Footer Buttons -->
-    <div class="flex justify-between mt-10">
-      <a href="{% url 'home' %}" class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300">Close</a>
-      <button 
-        class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition">
-        <a href="attendee-tickets.html"></a>✅ Register
-      </button>
-    </div>
+    <!-- Footer Buttons -->
+<div class="flex justify-between mt-10">
+  <a href="{% url 'home' %}" class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300">Close</a>
+  
+  <button onclick="goToAttendeeTickets()" class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition">
+  ✅ Register
+</button>
+
+
+</div>
+
   </div>
 </div>
 
@@ -65,5 +69,33 @@
 <!-- AOS JS -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>AOS.init({ once: true });</script>
+<script>
+function updateQty(ticketType, change) {
+  let input = document.getElementById(ticketType + "Qty");
+  let current = parseInt(input.value) || 0;
+  let newValue = current + change;
+
+  // Quantity 0 se niche na jaye
+  if (newValue < 0) newValue = 0;
+
+  input.value = newValue;
+}
+
+
+function goToAttendeeTickets() {
+    const standard = document.getElementById("standardQty").value;
+    const vip = document.getElementById("vipQty").value;
+
+    if (standard == 0 && vip == 0) {
+        alert("⚠️ Please select at least one ticket.");
+        return;
+    }
+
+    // ✅ Make sure to use the correct URL name and pass event.id
+   window.location.href = "{% url 'attendee_tickets' event.id %}?standard_qty=" + standard + "&vip_qty=" + vip;
+
+}
+</script>
+
 
 {% endblock %}

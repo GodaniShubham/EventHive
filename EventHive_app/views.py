@@ -7,9 +7,10 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-
-from .models import CustomUser, Event, Category, Ticket, Booking
-
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import razorpay
+from .models import CustomUser, Event, Category, Ticket, Booking, Attendee
 
 # ------------------- Register -------------------
 def register(request):
@@ -18,8 +19,9 @@ def register(request):
         email = request.POST.get('email')
         phone = request.POST.get('phone')
         password = request.POST.get('password')
+        role = request.POST.get('role')
 
-        if not all([username, email, phone, password]):
+        if not all([username, email, phone, password, role]):
             messages.error(request, "⚠️ All fields are required.")
             return redirect("register")
 
@@ -28,6 +30,9 @@ def register(request):
             return redirect("register")
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, "⚠️ Username already taken!")
+            return redirect("register")
+        if role not in ["organizer", "attendee"]:
+            messages.error(request, "⚠️ Invalid role selected.")
             return redirect("register")
 
         otp = ''.join([str(random.randint(0, 9)) for _ in range(6)])
@@ -38,7 +43,9 @@ def register(request):
             phone=phone,
             password=password,
             otp=otp,
-            is_verified=False
+            is_verified=False,
+            is_organizer=(role == "organizer"),
+            is_attendee=(role == "attendee")
         )
 
         try:
@@ -59,7 +66,6 @@ def register(request):
 
     return render(request, "register.html")
 
-
 # ------------------- Verify OTP -------------------
 def verify_otp(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
@@ -74,22 +80,32 @@ def verify_otp(request, user_id):
             user.otp = None
             user.save()
             login(request, user)
+            # Store user data in session
+            request.session['user_data'] = {
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': 'organizer' if user.is_organizer else 'attendee'
+            }
+            request.session.modified = True
             messages.success(request, "🎉 Account verified successfully!")
+            if user.is_organizer:
+                return redirect("organizer_home")
             return redirect("attendee_home")
         else:
             messages.error(request, "❌ Invalid OTP. Please try again.")
 
     return render(request, "verify.html", {"email": user.email})
 
-
 # ------------------- Login -------------------
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get('email')
         password = request.POST.get('password')
+        role = request.POST.get('role')
 
-        if not all([email, password]):
-            messages.error(request, "⚠️ Email and password required.")
+        if not all([email, password, role]):
+            messages.error(request, "⚠️ Email, password, and role are required.")
             return redirect("login")
 
         try:
@@ -98,11 +114,29 @@ def login_view(request):
             messages.error(request, "❌ User does not exist.")
             return redirect("login")
 
+        # Check if the role matches
+        if role == "organizer" and not user.is_organizer:
+            messages.error(request, "❌ This account is not registered as an organizer.")
+            return redirect("login")
+        if role == "attendee" and not user.is_attendee:
+            messages.error(request, "❌ This account is not registered as a normal user.")
+            return redirect("login")
+
         user = authenticate(request, username=user.username, password=password)
         if user:
             if user.is_verified:
                 login(request, user)
+                # Store user data in session
+                request.session['user_data'] = {
+                    'user_id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'role': 'organizer' if user.is_organizer else 'attendee'
+                }
+                request.session.modified = True
                 messages.success(request, "✅ Logged in successfully!")
+                if user.is_organizer:
+                    return redirect("organizer_home")
                 return redirect("attendee_home")
             else:
                 return redirect("verify_otp", user_id=user.id)
@@ -111,23 +145,22 @@ def login_view(request):
 
     return render(request, "login.html")
 
-
 # ------------------- Logout -------------------
 @login_required(login_url="login")
 def logout_view(request):
+    # Clear session data
+    request.session.flush()
     logout(request)
     messages.success(request, "✅ Logged out successfully!")
     return redirect("login")
-
 
 # ------------------- Home -------------------
 @login_required(login_url="login")
 def home(request):
     context = {
-        'some_data': 'value',
+        'user_data': request.session.get('user_data', {})
     }
     return render(request, 'home.html', context)
-
 
 # ------------------- Event Detail -------------------
 @login_required(login_url="login")
@@ -139,38 +172,26 @@ def event_detail(request, event_id):
     return render(request, "event_detail.html", {
         "event": event,
         "tickets": tickets,
-        "registered": registered
+        "registered": registered,
+        "user_data": request.session.get('user_data', {})
     })
 
-
-@login_required(login_url="login")
-def profile_view(request):
-    return render(request, "profile.html", {"user": request.user})
-from django.db.models import Q
-from django.core.paginator import Paginator
-from django.shortcuts import render
-from .models import Event, Category
-
+# ------------------- Attendee Home -------------------
 def attendee_home(request):
     events = Event.objects.all()
     categories = Category.objects.all()
 
-    # --- Get filter values ---
     category_filter = request.GET.get("category", "all")
     date_filter = request.GET.get("date", "")
     event_type_filter = request.GET.get("event_type", "all")
     search_query = request.GET.get("search", "")
 
-    # --- Apply filters ---
     if category_filter != "all":
         events = events.filter(category__name__iexact=category_filter)
-
     if date_filter:
         events = events.filter(start_date=date_filter)
-
     if event_type_filter != "all":
         events = events.filter(event_type__iexact=event_type_filter)
-
     if search_query:
         events = events.filter(
             Q(title__icontains=search_query) |
@@ -178,15 +199,13 @@ def attendee_home(request):
             Q(location__icontains=search_query)
         )
 
-    # --- Pagination ---
-    paginator = Paginator(events, 6)  # 6 events per page
+    paginator = Paginator(events, 6)
     page_number = request.GET.get("page")
     events_page = paginator.get_page(page_number)
 
-    # --- Preserve filters in pagination links ---
     query_params = request.GET.copy()
     if "page" in query_params:
-        query_params.pop("page")  # remove page to append later
+        query_params.pop("page")
 
     return render(request, "attendeehome.html", {
         "events": events_page,
@@ -195,23 +214,342 @@ def attendee_home(request):
         "date_filter": date_filter,
         "event_type_filter": event_type_filter,
         "search_query": search_query,
-        "query_params": query_params.urlencode(),  # for pagination links
+        "query_params": query_params.urlencode(),
+        "user_data": request.session.get('user_data', {})
     })
 
+# ------------------- Profile -------------------
+@login_required(login_url="login")
+def profile_view(request):
+    return render(request, "profile.html", {
+        "user": request.user,
+        "user_data": request.session.get('user_data', {})
+    })
 
 def profile_page(request):
-    return render(request, "profile_page.html")
-
+    return render(request, "profile_page.html", {
+        "user_data": request.session.get('user_data', {})
+    })
 
 # ------------------- Ticket Booking Flow -------------------
 @login_required(login_url="login")
+def register_tickets(request, event_id):
+    return redirect("book_tickets", event_id=event_id)
+
+@login_required(login_url="login")
 def book_tickets(request, event_id):
     event = get_object_or_404(Event, id=event_id)
-    return render(request, "tickets.html", {"event": event})
+    if request.method == "POST":
+        standard = int(request.POST.get('standard_qty', 0))
+        vip = int(request.POST.get('vip_qty', 0))
+
+        if standard == 0 and vip == 0:
+            messages.error(request, "⚠️ Please select at least one ticket.")
+            return redirect("book_tickets", event_id=event_id)
+
+        request.session["tickets"] = {
+            "standard": standard,
+            "vip": vip
+        }
+        request.session.modified = True
+
+        return redirect("attendee_tickets", event_id=event_id)
+
+    return render(request, "tickets.html", {
+        "event": event,
+        "user_data": request.session.get('user_data', {})
+    })
+
+def attendee_tickets(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    standard = int(request.GET.get("standard_qty", 0))
+    vip = int(request.GET.get("vip_qty", 0))
+    if standard == 0 and vip == 0:
+        messages.error(request, "⚠️ Please select at least one ticket.")
+        return redirect("book_tickets", event_id=event.id)
+
+    return render(request, "attendee_tickets.html", {
+        "event": event,
+        "tickets": {"standard": standard, "vip": vip}
+    })
 
 
+@login_required(login_url="login")
+def make_payment(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    tickets = request.session.get("tickets", {})
 
-# ------------------- Organizer Attendees -------------------
+    if not tickets:
+        messages.error(request, "⚠️ No tickets selected.")
+        return redirect("book_tickets", event_id=event_id)
+
+    if request.method == "POST":
+        attendees = []
+        total_tickets = tickets.get("standard", 0) + tickets.get("vip", 0)
+        for i in range(1, total_tickets + 1):
+            attendee = {
+                "name": request.POST.get(f"attendee_{i}_name"),
+                "email": request.POST.get(f"attendee_{i}_email"),
+                "phone": request.POST.get(f"attendee_{i}_phone"),
+                "gender": request.POST.get(f"attendee_{i}_gender"),
+                "ticket_type": request.POST.get(f"attendee_{i}_ticket_type")
+            }
+            if not all([attendee["name"], attendee["email"], attendee["phone"], attendee["gender"], attendee["ticket_type"]]):
+                messages.error(request, "⚠️ All attendee fields are required.")
+                return redirect("attendee_ticket_page", event_id=event_id)
+            attendees.append(attendee)
+
+        request.session["attendees"] = attendees
+        request.session.modified = True
+
+        total_amount = 0
+        standard_ticket = Ticket.objects.filter(event=event, type="standard").first()
+        vip_ticket = Ticket.objects.filter(event=event, type="vip").first()
+        for attendee in attendees:
+            if attendee["ticket_type"] == "VIP" and vip_ticket:
+                total_amount += int(vip_ticket.price * 100)  # Convert to paise
+            elif attendee["ticket_type"] == "Standard" and standard_ticket:
+                total_amount += int(standard_ticket.price * 100)
+
+        try:
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            order = client.order.create({
+                "amount": total_amount,
+                "currency": "INR",
+                "payment_capture": "1"
+            })
+            request.session["order_id"] = order["id"]
+            request.session["total_amount"] = total_amount
+            request.session.modified = True
+        except Exception as e:
+            messages.error(request, f"❌ Failed to create Razorpay order: {str(e)}")
+            return redirect("attendee_ticket_page", event_id=event_id)
+
+        return render(request, "payment_page.html", {
+            "event": event,
+            "order_id": order["id"],
+            "total_amount": total_amount,
+            "razorpay_key": settings.RAZORPAY_KEY_ID,
+            "user_data": request.session.get('user_data', {})
+        })
+
+    return redirect("attendee_ticket_page", event_id=event_id)
+
+@csrf_exempt
+@login_required
+def payment_success(request, event_id):
+    if request.method == "POST":
+        data = request.POST
+        attendees = request.session.get("attendees", [])
+        event = get_object_or_404(Event, id=event_id)
+        total_amount = request.session.get("total_amount", 0) / 100  # in ₹
+
+        standard_ticket = Ticket.objects.filter(event=event, type="standard").first()
+        vip_ticket = Ticket.objects.filter(event=event, type="vip").first()
+
+        try:
+            for attendee in attendees:
+                ticket = vip_ticket if attendee["ticket_type"] == "VIP" else standard_ticket
+                if ticket:
+                    booking = Booking.objects.create(
+                        user=request.user,
+                        event=event,
+                        ticket=ticket,
+                        quantity=1,
+                        attendee_name=attendee["name"],
+                        attendee_email=attendee["email"],
+                        attendee_phone=attendee["phone"],
+                        attendee_gender=attendee["gender"],
+                        payment_id=data.get("razorpay_payment_id"),
+                        amount_paid=total_amount / len(attendees) if attendees else 0,
+                        payment_status="paid"
+                    )
+                    Attendee.objects.create(
+                        booking=booking,
+                        name=attendee["name"],
+                        email=attendee["email"],
+                        phone=attendee["phone"],
+                        gender=attendee["gender"]
+                    )
+            # Clear session data
+            request.session.pop("attendees", None)
+            request.session.pop("order_id", None)
+            request.session.pop("total_amount", None)
+            request.session.pop("tickets", None)
+            request.session.modified = True
+            messages.success(request, "✅ Payment successful & tickets booked!")
+            return JsonResponse({"status": "success"})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)})
+
+    return JsonResponse({"status": "error", "message": "Invalid request"})
+
+# ------------------- Organizer Section -------------------
+@login_required(login_url="login")
+def organizer_home(request):
+    if not request.user.is_organizer:
+        messages.error(request, "❌ Unauthorized access!")
+        return redirect("attendee_home")
+    else:
+        events = Event.objects.filter(organizer_name=request.user.username).order_by("-created_at")
+        categories = Category.objects.all()
+
+        category_filter = request.GET.get("category", "all")
+        date_filter = request.GET.get("date", "")
+        search_query = request.GET.get("search", "")
+
+        if category_filter != "all":
+            events = events.filter(category__name__iexact=category_filter)
+        if date_filter:
+            events = events.filter(start_date=date_filter)
+        if search_query:
+            events = events.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(location__icontains=search_query)
+            )
+
+        paginator = Paginator(events, 12)  # Adjust per-page count as needed
+        page_number = request.GET.get("page")
+        events_page = paginator.get_page(page_number)
+
+        query_params = request.GET.copy()
+        if "page" in query_params:
+            query_params.pop("page")
+
+        return render(request, "organizer.html", {
+            "events": events_page,
+            "categories": categories,
+            "category_filter": category_filter,
+            "date_filter": date_filter,
+            "search_query": search_query,
+            "query_params": query_params.urlencode(),
+            "user_data": request.session.get('user_data', {})
+        })  
+def create_event(request):
+    if not request.user.is_organizer:
+        messages.error(request, "❌ Unauthorized access!")
+        return redirect("attendee_home")
+
+    categories = Category.objects.all()
+
+    if request.method == "POST":
+        # ... (existing code to create event) ...
+        messages.success(request, f"✅ Event '{event.title}' created successfully!")
+        return redirect("manage_tickets", event_id=event.id)  # Redirect to add tickets immediately
+
+    return render(request, "create_event.html", {
+        "categories": categories,
+        "user_data": request.session.get('user_data', {})
+    })
+
+@login_required
+def edit_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
+    categories = Category.objects.all()
+
+    if request.method == "POST":
+        event.title = request.POST.get("title")
+        event.description = request.POST.get("description")
+        event.start_date = request.POST.get("start_date")
+        event.end_date = request.POST.get("end_date")
+        event.start_time = request.POST.get("start_time")
+        event.location = request.POST.get("location")
+        event.event_type = request.POST.get("event_type")
+        category_id = request.POST.get("category")
+        event.category = Category.objects.filter(id=category_id).first() if category_id else None
+
+        banner_image = request.FILES.get("banner_image")
+        if banner_image:
+            event.banner_image = banner_image
+
+        event.save()
+        messages.success(request, "✅ Event updated successfully!")
+        return redirect("organizer_home")
+
+    return render(request, "organizer/edit_event.html", {
+        "event": event,
+        "categories": categories,
+        "user_data": request.session.get('user_data', {})
+    })
+
+@login_required(login_url="login")
+def delete_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
+
+    if request.method == "POST":
+        event.delete()
+        messages.success(request, "🗑️ Event deleted successfully!")
+        return redirect("organizer_home")
+
+    return render(request, "organizer/confirm_delete.html", {
+        "event": event,
+        "user_data": request.session.get('user_data', {})
+    })
+
+@login_required(login_url="login")
+def manage_tickets(request, event_id):
+    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
+    tickets = Ticket.objects.filter(event=event)
+
+    if request.method == "POST":
+        ticket_type = request.POST.get("type")
+        price = request.POST.get("price")
+        quantity = request.POST.get("available_quantity")
+
+        Ticket.objects.create(
+            event=event,
+            type=ticket_type,
+            price=price,
+            available_quantity=quantity
+        )
+        messages.success(request, "🎟️ Ticket added successfully!")
+        return redirect("manage_tickets", event_id=event.id)
+
+    return render(request, "organizer/manage_tickets.html", {
+        "event": event,
+        "tickets": tickets,
+        "user_data": request.session.get('user_data', {})
+    })
+
+@login_required(login_url="login")
+def view_bookings(request, event_id):
+    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
+    bookings = Booking.objects.filter(event=event).select_related("user", "ticket")
+
+    return render(request, "organizer/view_bookings.html", {
+        "event": event,
+        "bookings": bookings,
+        "user_data": request.session.get('user_data', {})
+    })
+
+@login_required(login_url="login")
+def attendee_details(request, event_id, booking_id):
+    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
+    booking = get_object_or_404(Booking, id=booking_id, event=event)
+
+    return render(request, "organizer/attend_details.html", {
+        "event": event,
+        "booking": booking,
+        "attendee": booking.user,
+        "ticket": booking.ticket,
+        "user_data": request.session.get('user_data', {})
+    })
+
+@login_required(login_url="login")
+def register_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    if Booking.objects.filter(event=event, user=request.user).exists():
+        messages.info(request, "⚠️ You are already registered for this event.")
+        return redirect("event_detail", event_id=event_id)
+
+    return redirect("book_tickets", event_id=event_id)
+
+# ------------------- Helper -------------------
+def get_organizer_event(user, event_id):
+    return get_object_or_404(Event, id=event_id, organizer_email=user.email)
+
 @login_required(login_url="login")
 def attendees_list(request, event_id):
     event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
@@ -240,262 +578,28 @@ def attendees_list(request, event_id):
         "gender_filter": gender_filter,
         "attended_filter": attended_filter,
         "search_query": search_query,
+        "user_data": request.session.get('user_data', {})
     })
 
-
-# ------------------- Helper -------------------
-def get_organizer_event(user, event_id):
-    return get_object_or_404(Event, id=event_id, organizer_email=user.email)
-
-
-# ------------------- Payment -------------------
-@login_required(login_url="login")
-def make_payment(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-    tickets = request.session.get("tickets", {})
-    attendees = request.session.get("attendees", [])
-
-    if not tickets or not attendees:
-        messages.error(request, "⚠️ Invalid booking flow.")
-        return redirect("book_tickets", event_id=event.id)
-
-    return render(request, "payment.html", {"event": event, "tickets": tickets, "attendees": attendees})
-
-
-# ------------------- Organizer Section -------------------
-@login_required(login_url="login")
-def organizer_home(request):
-    if not getattr(request.user, "is_organizer", False):
-        messages.error(request, "❌ Unauthorized access!")
-        return redirect("attendee_home")
-
-    events = Event.objects.filter(organizer_name=request.user.username).order_by("-created_at")
-    return render(request, "organizer/home.html", {"events": events})
-
-@login_required
-def create_event(request):
-    if not getattr(request.user, "is_organizer", False):
-        messages.error(request, "❌ Unauthorized access!")
-        return redirect("attendee_home")
-
-    categories = Category.objects.all()
-
-    if request.method == "POST":
-        title = request.POST.get("title")
-        description = request.POST.get("description")
-        start_date = request.POST.get("start_date")
-        end_date = request.POST.get("end_date")
-        start_time = request.POST.get("start_time")
-        location = request.POST.get("location")
-        event_type = request.POST.get("event_type")
-        category_id = request.POST.get("category")
-        banner_image = request.FILES.get("banner_image")  # ✅ handle uploaded image
-
-        event = Event.objects.create(
-            title=title,
-            description=description,
-            start_date=start_date,
-            end_date=end_date,
-            start_time=start_time,
-            location=location,
-            event_type=event_type,
-            organizer_name=request.user.username,
-            organizer_email=request.user.email,
-            organizer_phone=request.user.phone,
-            banner_image=banner_image,
-            category=Category.objects.filter(id=category_id).first() if category_id else None
-        )
-        messages.success(request, "✅ Event created successfully with image!")
-        return redirect("organizer_home")
-
-    return render(request, "organizer/create_event.html", {"categories": categories})
-
-@login_required
-def edit_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
-    categories = Category.objects.all()
-
-    if request.method == "POST":
-        event.title = request.POST.get("title")
-        event.description = request.POST.get("description")
-        event.start_date = request.POST.get("start_date")
-        event.end_date = request.POST.get("end_date")
-        event.start_time = request.POST.get("start_time")
-        event.location = request.POST.get("location")
-        event.event_type = request.POST.get("event_type")
-        category_id = request.POST.get("category")
-        event.category = Category.objects.filter(id=category_id).first() if category_id else None
-
-        banner_image = request.FILES.get("banner_image")
-        if banner_image:
-            event.banner_image = banner_image  # ✅ update image if uploaded
-
-        event.save()
-        messages.success(request, "✅ Event updated successfully!")
-        return redirect("organizer_home")
-
-    return render(request, "organizer/edit_event.html", {
-        "event": event,
-        "categories": categories
-    })
-
-
-@login_required(login_url="login")
-def delete_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
-
-    if request.method == "POST":
-        event.delete()
-        messages.success(request, "🗑️ Event deleted successfully!")
-        return redirect("organizer_home")
-
-    return render(request, "organizer/confirm_delete.html", {"event": event})
-
-
-@login_required(login_url="login")
-def manage_tickets(request, event_id):
-    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
-    tickets = Ticket.objects.filter(event=event)
-
-    if request.method == "POST":
-        ticket_type = request.POST.get("type")
-        price = request.POST.get("price")
-        quantity = request.POST.get("available_quantity")
-
-        Ticket.objects.create(
-            event=event,
-            type=ticket_type,
-            price=price,
-            available_quantity=quantity
-        )
-        messages.success(request, "🎟️ Ticket added successfully!")
-        return redirect("manage_tickets", event_id=event.id)
-
-    return render(request, "organizer/manage_tickets.html", {
-        "event": event,
-        "tickets": tickets
-    })
-
-
-@login_required(login_url="login")
-def view_bookings(request, event_id):
-    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
-    bookings = Booking.objects.filter(event=event).select_related("user", "ticket")
-
-    return render(request, "organizer/view_bookings.html", {
-        "event": event,
-        "bookings": bookings
-    })
-
-
-@login_required(login_url="login")
-def attendee_details(request, event_id, booking_id):
-    event = get_object_or_404(Event, id=event_id, organizer_email=request.user.email)
-    booking = get_object_or_404(Booking, id=booking_id, event=event)
-
-    return render(request, "organizer/attend_details.html", {
-        "event": event,
-        "booking": booking,
-        "attendee": booking.user,
-        "ticket": booking.ticket,
-    })
-
-@login_required(login_url="login")
-def register_event(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-
-    # Check if already registered
-    if Booking.objects.filter(event=event, user=request.user).exists():
-        messages.info(request, "⚠️ You are already registered for this event.")
-        return redirect("event_detail", event_id=event.id)
-
-    # ✅ Instead of directly creating a booking, send user to ticket booking page
-    return redirect("book_tickets", event_id=event.id)
-
-
-import razorpay
-from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-
-@login_required
-def make_payment(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-
-    if request.method == "POST":
-        # Collect attendee info from POST
-        attendees = []
-        for key in request.POST:
-            if key.startswith("attendee_") and key.endswith("_name"):
-                index = key.split("_")[1]
-                attendee = {
-                    "name": request.POST.get(f"attendee_{index}_name"),
-                    "email": request.POST.get(f"attendee_{index}_email"),
-                    "phone": request.POST.get(f"attendee_{index}_phone"),
-                    "gender": request.POST.get(f"attendee_{index}_gender"),
-                    "ticket_type": "Standard" if index == "1" else "VIP"
-                }
-                attendees.append(attendee)
-
-        # Store attendees in session
-        request.session["attendees"] = attendees
-
-        # Calculate amount dynamically (example: Standard=0, VIP=500)
-        total_amount = 0
-        for attendee in attendees:
-            if attendee["ticket_type"] == "VIP":
-                total_amount += 50000  # in paise (₹500)
-            else:
-                total_amount += 0  # Standard ticket free
-
-        # Razorpay client
-        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
-        # Create order
-        order = client.order.create({
-            "amount": total_amount,
-            "currency": "INR",
-            "payment_capture": "1"
-        })
-
-        # Store order info in session
-        request.session["order_id"] = order["id"]
-        request.session["total_amount"] = total_amount
-
-        return render(request, "payment_page.html", {
-            "event": event,
-            "order_id": order["id"],
-            "total_amount": total_amount,
-            "razorpay_key": settings.RAZORPAY_KEY_ID
-        })
-
-@csrf_exempt
-@login_required
-def payment_success(request, event_id):
-    if request.method == "POST":
-        data = request.POST
-        attendees = request.session.get("attendees", [])
-        event = get_object_or_404(Event, id=event_id)
-
-        # Save booking for each attendee
-        for attendee in attendees:
-            Booking.objects.create(
-                user=request.user,
-                event=event,
-                ticket_type=attendee["ticket_type"],
-                attendee_name=attendee["name"],
-                attendee_email=attendee["email"],
-                attendee_phone=attendee["phone"],
-                attendee_gender=attendee["gender"],
-                payment_id=data.get("razorpay_payment_id"),
-                amount_paid=request.session.get("total_amount", 0)/100  # in ₹
-            )
-
-        # Clear session
-        request.session.pop("attendees", None)
-        request.session.pop("order_id", None)
-        request.session.pop("total_amount", None)
-
-        messages.success(request, "✅ Payment successful & tickets booked!")
-        return JsonResponse({"status": "success"})
-
+def my_events(request):
+    events = [
+        {
+            "id": 1,
+            "title": "Music Fest 2025",
+            "description": "An amazing night of live music.",
+            "banner_image": "https://picsum.photos/600/300?1",
+            "start_date": "2025-09-10",
+            "location": "Mumbai",
+            "is_published": True,
+        },
+        {
+            "id": 2,
+            "title": "Startup Expo",
+            "description": "Showcasing India’s top startups.",
+            "banner_image": "https://picsum.photos/600/300?2",
+            "start_date": "2025-10-05",
+            "location": "Bangalore",
+            "is_published": False,
+        },
+    ]
+    return render(request, "organizer.html", {"events": events})

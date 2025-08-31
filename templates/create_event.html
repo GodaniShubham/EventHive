@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Event - EventHive{% endblock %}
+
+{% block content %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<div class="min-h-screen bg-gray-50 py-10">
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6" data-aos="zoom-in" data-aos-duration="1000">
+    <h2 class="text-2xl font-bold mb-4 text-indigo-700">🎉 Create New Event</h2>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+      
+      <!-- Event Basics -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700">Event Title</label>
+          <input type="text" name="title" id="title" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+        </div>
+        <div>
+          <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+          <select name="category" id="category" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+            <option value="">Select Category</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea name="description" id="description" rows="4" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500"></textarea>
+      </div>
+
+      <!-- Dates and Time -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
+          <input type="date" name="start_date" id="start_date" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+        </div>
+        <div>
+          <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
+          <input type="date" name="end_date" id="end_date" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+        </div>
+        <div>
+          <label for="start_time" class="block text-sm font-medium text-gray-700">Start Time</label>
+          <input type="time" name="start_time" id="start_time" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+        </div>
+      </div>
+
+      <!-- Location and Type -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
+          <input type="text" name="location" id="location" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+        </div>
+        <div>
+          <label for="event_type" class="block text-sm font-medium text-gray-700">Event Type</label>
+          <select name="event_type" id="event_type" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+            <option value="">Select Type</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Banner Image -->
+      <div>
+        <label for="banner_image" class="block text-sm font-medium text-gray-700">Banner Image</label>
+        <input type="file" name="banner_image" id="banner_image" accept="image/*" class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+        <img id="banner-preview" class="mt-2 w-full h-40 object-cover rounded-lg hidden">
+      </div>
+
+      <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg font-semibold hover:scale-105 transition">
+        🚀 Create Event
+      </button>
+    </form>
+  </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init({ once: true });</script>
+<script>
+  // Preview banner image
+  document.getElementById('banner_image').addEventListener('change', function(event) {
+    const preview = document.getElementById('banner-preview');
+    const file = event.target.files[0];
+    if (file) {
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove('hidden');
+    }
+  });
+</script>
+{% endblock %}
