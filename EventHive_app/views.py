@@ -32,6 +32,9 @@ def register(request):
         if CustomUser.objects.filter(username=username).exists():
             messages.error(request, "⚠️ Username already taken!")
             return redirect("register")
+        if CustomUser.objects.filter(phone=phone).exists():   # ✅ Add this
+            messages.error(request, "⚠️ Phone number already registered!")
+            return redirect("register")
         if role not in ["organizer", "attendee"]:
             messages.error(request, "⚠️ Invalid role selected.")
             return redirect("register")
@@ -227,9 +230,36 @@ def profile_view(request):
         "user_data": request.session.get('user_data', {})
     })
 
+from django.contrib.auth.decorators import login_required
+
+@login_required(login_url="login")
 def profile_page(request):
+    user = request.user
+
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        bio = request.POST.get("bio")
+        image = request.FILES.get("image")
+
+        if full_name:
+            user.first_name = full_name.split(" ")[0]
+            if len(full_name.split(" ")) > 1:
+                user.last_name = " ".join(full_name.split(" ")[1:])
+        if email:
+            user.email = email
+        if bio:
+            user.bio = bio  # if you add a bio field in CustomUser
+        if image:
+            user.image = image  # ✅ save uploaded profile pic
+
+        user.save()
+        messages.success(request, "✅ Profile updated successfully!")
+        return redirect("profile_page")
+
     return render(request, "profile_page.html", {
-        "user_data": request.session.get('user_data', {})
+        "user": user,
+        "user_data": request.session.get("user_data", {})
     })
 
 # ------------------- Ticket Booking Flow -------------------
@@ -396,9 +426,11 @@ def organizer_home(request):
         messages.error(request, "❌ Unauthorized access!")
         return redirect("attendee_home")
     else:
+        # All events for this organizer
         events = Event.objects.filter(organizer_name=request.user.username).order_by("-created_at")
         categories = Category.objects.all()
 
+        # ---- Filters ----
         category_filter = request.GET.get("category", "all")
         date_filter = request.GET.get("date", "")
         search_query = request.GET.get("search", "")
@@ -414,10 +446,18 @@ def organizer_home(request):
                 Q(location__icontains=search_query)
             )
 
-        paginator = Paginator(events, 12)  # Adjust per-page count as needed
+        # ---- Counters ----
+        total_events = events.count()
+        published_events = events.filter(is_published=True).count()
+        draft_events = events.filter(is_published=False).count()
+        tickets_sold = Ticket.objects.filter(event__in=events).count()
+
+        # ---- Pagination ----
+        paginator = Paginator(events, 12)  # 12 per page
         page_number = request.GET.get("page")
         events_page = paginator.get_page(page_number)
 
+        # Preserve query params (for filters + pagination)
         query_params = request.GET.copy()
         if "page" in query_params:
             query_params.pop("page")
@@ -429,8 +469,15 @@ def organizer_home(request):
             "date_filter": date_filter,
             "search_query": search_query,
             "query_params": query_params.urlencode(),
-            "user_data": request.session.get('user_data', {})
-        })  
+            "user_data": request.session.get('user_data', {}),
+
+            # 👇 Added counters
+            "total_events": total_events,
+            "published_events": published_events,
+            "draft_events": draft_events,
+            "tickets_sold": tickets_sold,
+        })
+
 @login_required(login_url="login")
 def create_event(request):
     if not request.user.is_organizer:
@@ -492,10 +539,16 @@ def edit_event(request, event_id):
         event.end_date = request.POST.get("end_date")
         event.start_time = request.POST.get("start_time")
         event.location = request.POST.get("location")
-        event.event_type = request.POST.get("event_type")
-        category_id = request.POST.get("category")
-        event.category = Category.objects.filter(id=category_id).first() if category_id else None
 
+        # ✅ Ensure event_type is saved (fallback to "offline" if missing)
+        event.event_type = request.POST.get("event_type") or event.event_type or "offline"
+
+        # ✅ Assign category safely
+        category_id = request.POST.get("category")
+        if category_id:
+            event.category = Category.objects.filter(id=category_id).first()
+
+        # ✅ Handle file upload safely
         banner_image = request.FILES.get("banner_image")
         if banner_image:
             event.banner_image = banner_image
@@ -504,11 +557,12 @@ def edit_event(request, event_id):
         messages.success(request, "✅ Event updated successfully!")
         return redirect("organizer_home")
 
-    return render(request, "oeditevent.html", {
+    return render(request, "editevent.html", {
         "event": event,
         "categories": categories,
-        "user_data": request.session.get('user_data', {})
+        "user_data": request.session.get("user_data", {}),
     })
+
 
 @login_required(login_url="login")
 def delete_event(request, event_id):
@@ -640,3 +694,6 @@ def my_events(request):
         },
     ]
     return render(request, "organizer.html", {"events": events})
+def payment_page(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    return render(request, "payment_page.html", {"event": event})
