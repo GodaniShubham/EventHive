@@ -1,21 +1,20 @@
-    {% extends "base.html" %}
+{% extends "base.html" %}
 
-    {% block title %}Profile - EventHive{% endblock %}
+{% block title %}Profile - EventHive{% endblock %}
 
-    {% block content %}
-    <div class="relative inline-block group">
-        <!-- Dropdown Button -->
-        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-            Profile ⬇
-        </button>
+{% block content %}
+<div class="relative inline-block">
+    <!-- Dropdown Button -->
+    <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+        Profile
+    </button>
 
-        <!-- Dropdown Menu -->
-        <div class="absolute hidden group-hover:block bg-white shadow-lg rounded-lg mt-2 w-40 z-50">
-            <a href="{% url 'profile_page' %}" 
-            class="block px-4 py-2 hover:bg-indigo-100 rounded-t-lg">👤 View Profile</a>
-            <a href="{% url 'logout' %}" 
-            class="block px-4 py-2 hover:bg-red-100 rounded-b-lg">🚪 Logout</a>
-        </div>
+    <!-- Dropdown Menu (Always Visible) -->
+    <div class="sticky bg-white shadow-lg rounded-lg mt-2 w-40 z-50">
+        <a href="{% url 'profile' %}" 
+           class="block px-4 py-2 hover:bg-indigo-100 rounded-t-lg">👤 View Profile</a>
+        <a href="{% url 'logout' %}" 
+           class="block px-4 py-2 hover:bg-red-100 rounded-b-lg">🚪 Logout</a>
     </div>
-
-    {% endblock %}
+</div>
+{% endblock %}

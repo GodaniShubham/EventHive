@@ -52,36 +52,15 @@
     <!-- Footer Buttons -->
     <div class="flex justify-between mt-10">
       <a href="{% url 'home' %}" class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300">Close</a>
-      <button onclick="registerTickets()" 
+      <button 
         class="px-8 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:scale-105 transition">
-        ✅ Register
+        <a href="attendee-tickets.html"></a>✅ Register
       </button>
     </div>
   </div>
 </div>
 
-<!-- JS -->
-<script>
-function updateQty(type, change) {
-  const input = document.getElementById(type + "Qty");
-  let value = parseInt(input.value) || 0;
-  value = Math.max(0, value + change); // Prevent negative qty
-  input.value = value;
-}
 
-function registerTickets() {
-  const standard = document.getElementById("standardQty").value;
-  const vip = document.getElementById("vipQty").value;
-
-  if (standard == 0 && vip == 0) {
-    alert("⚠️ Please select at least one ticket.");
-    return;
-  }
-
-  alert(`🎟 Tickets booked!\nStandard: ${standard}\nVIP: ${vip}`);
-  // Yaha backend POST call karna hoga booking confirm karne ke liye
-}
-</script>
 
 <!-- AOS JS -->
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>

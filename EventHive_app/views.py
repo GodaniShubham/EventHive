@@ -210,23 +210,6 @@ def book_tickets(request, event_id):
     return render(request, "tickets.html", {"event": event})
 
 
-@login_required(login_url="login")
-def register_tickets(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-
-    if request.method == "POST":
-        standard_qty = int(request.POST.get("standard_qty", 0))
-        vip_qty = int(request.POST.get("vip_qty", 0))
-
-        if standard_qty == 0 and vip_qty == 0:
-            messages.error(request, "⚠️ Please select at least one ticket.")
-            return redirect("book_tickets", event_id=event.id)
-
-        request.session["tickets"] = {"standard": standard_qty, "vip": vip_qty}
-        return redirect("attendee_details", event_id=event.id)
-
-    return redirect("book_tickets", event_id=event.id)
-
 
 # ------------------- Organizer Attendees -------------------
 @login_required(login_url="login")
@@ -428,4 +411,91 @@ def register_event(request, event_id):
 
     # ✅ Instead of directly creating a booking, send user to ticket booking page
     return redirect("book_tickets", event_id=event.id)
+
+
+import razorpay
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+@login_required
+def make_payment(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+
+    if request.method == "POST":
+        # Collect attendee info from POST
+        attendees = []
+        for key in request.POST:
+            if key.startswith("attendee_") and key.endswith("_name"):
+                index = key.split("_")[1]
+                attendee = {
+                    "name": request.POST.get(f"attendee_{index}_name"),
+                    "email": request.POST.get(f"attendee_{index}_email"),
+                    "phone": request.POST.get(f"attendee_{index}_phone"),
+                    "gender": request.POST.get(f"attendee_{index}_gender"),
+                    "ticket_type": "Standard" if index == "1" else "VIP"
+                }
+                attendees.append(attendee)
+
+        # Store attendees in session
+        request.session["attendees"] = attendees
+
+        # Calculate amount dynamically (example: Standard=0, VIP=500)
+        total_amount = 0
+        for attendee in attendees:
+            if attendee["ticket_type"] == "VIP":
+                total_amount += 50000  # in paise (₹500)
+            else:
+                total_amount += 0  # Standard ticket free
+
+        # Razorpay client
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+        # Create order
+        order = client.order.create({
+            "amount": total_amount,
+            "currency": "INR",
+            "payment_capture": "1"
+        })
+
+        # Store order info in session
+        request.session["order_id"] = order["id"]
+        request.session["total_amount"] = total_amount
+
+        return render(request, "payment_page.html", {
+            "event": event,
+            "order_id": order["id"],
+            "total_amount": total_amount,
+            "razorpay_key": settings.RAZORPAY_KEY_ID
+        })
+
+@csrf_exempt
+@login_required
+def payment_success(request, event_id):
+    if request.method == "POST":
+        data = request.POST
+        attendees = request.session.get("attendees", [])
+        event = get_object_or_404(Event, id=event_id)
+
+        # Save booking for each attendee
+        for attendee in attendees:
+            Booking.objects.create(
+                user=request.user,
+                event=event,
+                ticket_type=attendee["ticket_type"],
+                attendee_name=attendee["name"],
+                attendee_email=attendee["email"],
+                attendee_phone=attendee["phone"],
+                attendee_gender=attendee["gender"],
+                payment_id=data.get("razorpay_payment_id"),
+                amount_paid=request.session.get("total_amount", 0)/100  # in ₹
+            )
+
+        # Clear session
+        request.session.pop("attendees", None)
+        request.session.pop("order_id", None)
+        request.session.pop("total_amount", None)
+
+        messages.success(request, "✅ Payment successful & tickets booked!")
+        return JsonResponse({"status": "success"})
 

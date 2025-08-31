@@ -11,7 +11,7 @@
     <div class="flex items-center space-x-6 mb-6">
         <div class="w-24 h-24">
             <img src="{{ user.profile.image.url|default:'/static/images/default-avatar.png' }}" 
-                 alt="Profile Picture"
+                 
                  class="w-24 h-24 rounded-full object-cover border-2 border-indigo-500">
         </div>
         <form method="POST" enctype="multipart/form-data">
@@ -58,6 +58,6 @@
     </form>
 
     <!-- Change Password Link -->
-        
+
 </div>
 {% endblock %}

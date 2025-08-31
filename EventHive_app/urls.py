@@ -11,11 +11,16 @@ urlpatterns = [
     path("verify/<int:user_id>/", views.verify_otp, name="verify_otp"),
     path('' , views.home , name="home"),
     # Attendee
+    path('make-payment/<int:event_id>/', views.make_payment, name="make_payment"),
+    path('payment-success/<int:event_id>/', views.payment_success, name="payment_success"),
+
+
     path("ahome/", views.attendee_home, name="attendee_home"),
     path("event/<int:event_id>/register/", views.register_event, name="register_event"),
+    
     path("event/<int:event_id>/", views.event_detail, name="event_detail"),
     path("tickets/<int:event_id>/", views.book_tickets, name="book_tickets"),
-    path("tickets/register/<int:event_id>/", views.register_tickets, name="register_tickets"),
+    # path("tickets/register/<int:event_id>/", views.register_tickets, name="register_tickets"),
     path("tickets/attendees/<int:event_id>/", views.attendee_details, name="attendee_details"),
     path("tickets/payment/<int:event_id>/", views.make_payment, name="make_payment"),
 

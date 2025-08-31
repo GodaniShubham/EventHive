@@ -24,18 +24,38 @@
 
     {% if user.is_authenticated %}
         <!-- Profile Dropdown -->
-        <div class="relative group">
-            <!-- Profile Icon -->
-            <button class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold focus:outline-none">
-                {{ user.username|first|upper }}
-            </button>
+        <!-- Profile Dropdown -->
+<div class="relative group">
+    <!-- Profile Icon/Button -->
+    <button class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold focus:outline-none">
+        {{ user.username|first|upper }}
+    </button>
 
-            <!-- Dropdown -->
-            <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition">
-                <a href="{% url 'profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">👤 View Profile</a>
-                <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">🚪 Logout</a>
-            </div>
-        </div>
+    <!-- Dropdown Menu -->
+    <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible transition-opacity duration-300 dropdown-menu">
+        <a href="{% url 'profile' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">👤 View Profile</a>
+        <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">🚪 Logout</a>
+    </div>
+</div>
+
+<style>
+/* Dropdown appears on hover and stays for 0.5s after leaving */
+.group:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.dropdown-menu {
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Optional: keep it visible slightly longer after leaving */
+.group .dropdown-menu {
+    pointer-events: auto;
+}
+</style>
+
     {% else %}
         <a href="{% url 'login' %}" class="hover:text-indigo-600 transition">Login</a>
         <a href="{% url 'register' %}" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-md">

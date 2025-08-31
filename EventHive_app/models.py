@@ -79,21 +79,24 @@ class Ticket(models.Model):
 
 
 # ------------------- Booking Model -------------------
+# models.py
 class Booking(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ("pending", "Pending"),
         ("paid", "Paid"),
         ("cancelled", "Cancelled"),
     ]
-
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
-
+    attendee_name = models.CharField(max_length=100, blank=True, null=True)
+    attendee_email = models.EmailField(blank=True, null=True)
+    attendee_phone = models.CharField(max_length=15, blank=True, null=True)
+    attendee_gender = models.CharField(max_length=10, choices=[("male", "Male"), ("female", "Female"), ("other", "Other")], blank=True, null=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
-    transaction_id = models.CharField(max_length=100, blank=True, null=True)
-
+    payment_id = models.CharField(max_length=100, blank=True, null=True)  # Changed from transaction_id
+    amount_paid = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
     booked_at = models.DateTimeField(auto_now_add=True)
 
     def total_price(self):
@@ -101,7 +104,6 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.event.title} ({self.ticket.type})"
-
 
 # ------------------- Attendee Model -------------------
 class Attendee(models.Model):

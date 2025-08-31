@@ -58,9 +58,5 @@ class TicketAdmin(admin.ModelAdmin):
     ordering = ("event", "type")
 
 # ---------------- Booking Admin ----------------
-@admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
-    list_display = ("user", "event", "ticket", "quantity", "payment_status", "transaction_id", "booked_at")
-    list_filter = ("payment_status", "event")
-    search_fields = ("user__username", "event__title", "ticket__type", "transaction_id")
-    ordering = ("-booked_at",)
+    list_display = ('id', 'user', 'event', 'date', 'status', 'transaction_id')
