@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Manage Tickets - EventHive{% endblock %}
+
+{% block content %}
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<div class="min-h-screen bg-gray-50 py-10">
+  <div class="container mx-auto px-6">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-extrabold text-indigo-700">🎟️ Manage Tickets - {{ event.title }}</h1>
+      <a href="{% url 'organizer_home' %}" 
+         class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg font-semibold hover:scale-105 transition">
+         ← Back
+      </a>
+    </div>
+
+    <!-- Ticket List -->
+    {% if tickets %}
+      <div class="overflow-x-auto mb-10" data-aos="fade-up" data-aos-duration="800">
+        <table class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
+          <thead class="bg-indigo-600 text-white">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Type</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Price (₹)</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold">Available Quantity</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for ticket in tickets %}
+              <tr class="hover:bg-gray-50 transition">
+                <td class="px-6 py-4 font-medium text-gray-700">{{ ticket.type }}</td>
+                <td class="px-6 py-4 text-gray-600">₹ {{ ticket.price }}</td>
+                <td class="px-6 py-4 text-gray-600">{{ ticket.available_quantity }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-center text-gray-500 mb-10">No tickets created yet for this event.</p>
+    {% endif %}
+
+    <!-- Add Ticket Form -->
+    <div class="bg-white p-8 rounded-2xl shadow-xl" data-aos="fade-up" data-aos-duration="800">
+      <h2 class="text-xl font-bold text-indigo-700 mb-4">➕ Add New Ticket</h2>
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Ticket Type</label>
+          <select name="type" class="w-full px-4 py-2 mt-1 border rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            <option value="Standard">Standard</option>
+            <option value="VIP">VIP</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Price (₹)</label>
+          <input type="number" name="price" required 
+                 class="w-full px-4 py-2 mt-1 border rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Available Quantity</label>
+          <input type="number" name="available_quantity" required 
+                 class="w-full px-4 py-2 mt-1 border rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <button type="submit" 
+                class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-md hover:scale-105 transition">
+          Add Ticket
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>AOS.init({ once: true });</script>
+{% endblock %}

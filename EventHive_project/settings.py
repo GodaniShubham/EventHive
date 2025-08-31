@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',  # Jazzmin should be at the top
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +42,31 @@ INSTALLED_APPS = [
     'EventHive_app',
 
 ]
+JAZZMIN_SETTINGS = {
+    "site_title": "EventHive Admin",
+    "site_header": "EventHive Dashboard",
+    "site_brand": "EventHive",
+    "welcome_sign": "Welcome to EventHive Admin 🎉",
+    "site_logo": "static/images/logo.png",  # apna logo laga sakta hai
+    "copyright": "EventHive © 2025",
+
+    # Icons (FontAwesome)
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "auth.user": "fas fa-user",
+        "auth.Group": "fas fa-users",
+        "events.Event": "fas fa-calendar-check",
+        "events.Category": "fas fa-tags",
+    },
+
+    # Sidebar
+    "show_sidebar": True,
+    "navigation_expanded": True,
+
+    # UI Colors
+    "theme": "darkly",  # options: cerulean, cosmo, flatly, darkly, litera, minty, etc.
+}
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

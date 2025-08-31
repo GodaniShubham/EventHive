@@ -1,189 +1,114 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
+{% block title %}Attendee Details - EventHive{% endblock %}
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attendee Details - EventHive</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <style>
-    body {
-      background-color: #f4f7fa;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      font-family: 'Inter', sans-serif;
-    }
+{% block content %}
+<div class="py-12 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+  <div class="bg-white p-10 w-full max-w-5xl mx-auto shadow-2xl rounded-3xl border border-gray-200" 
+       data-aos="fade-up" data-aos-duration="1000">
 
-    .navbar {
-      background-color: #1e3a8a;
-    }
+    <!-- Heading -->
+    <div class="text-center mb-12">
+      <h2 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-teal-600 to-green-500 bg-clip-text text-transparent"
+          data-aos="zoom-in">
+        📝 Attendee Information
+      </h2>
+      <p class="text-gray-600 mt-4 text-lg" data-aos="fade-up" data-aos-delay="200">
+        Fill in attendee details for each ticket before payment 🚀
+      </p>
+    </div>
 
-    .card {
-      border: none;
-      border-radius: 1rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
+    <!-- Form -->
+    <form method="POST" action="{% url 'make_payment' event.id %}" class="space-y-12">
+      {% csrf_token %}
 
-    .btn-primary {
-      background-color: #0d9488;
-      border-color: #0d9488;
-    }
-
-    .btn-primary:hover {
-      background-color: #0b8276;
-      border-color: #0b8276;
-    }
-
-    .btn-secondary {
-      background-color: #e5e7eb;
-      border-color: #e5e7eb;
-      color: #374151;
-    }
-
-    .btn-secondary:hover {
-      background-color: #d1d5db;
-      border-color: #d1d5db;
-    }
-
-    .form-control:focus {
-      border-color: #0d9488;
-      box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.25);
-    }
-  </style>
-</head>
-
-<body>
-  <nav class="navbar text-white p-4">
-    <div class="container mx-auto flex justify-between items-center">
-      <a href="{% url 'home' %}" class="text-2xl font-bold">EventHive</a>
-      <div>
-        {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}" class="text-white hover:underline">Logout</a>
-        {% else %}
-        <a href="{% url 'login' %}" class="text-white hover:underline mr-4">Login</a>
-        <a href="{% url 'register' %}" class="text-white hover:underline">Register</a>
-        {% endif %}
+      <!-- Standard Ticket -->
+      <div class="relative border-l-[6px] border-teal-500 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 bg-gradient-to-r from-white to-gray-50"
+           data-aos="fade-right" data-aos-delay="300">
+        <span class="absolute -top-4 left-6 bg-teal-500 text-white px-4 py-1 rounded-full shadow-md text-sm">Standard</span>
+        <h3 class="text-2xl font-bold text-teal-600 mb-6">🎟 Ticket #1</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Full Name</label>
+              <input type="text" name="attendee_1_name" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500" required>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Phone</label>
+              <input type="text" name="attendee_1_phone" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500" required>
+            </div>
+          </div>
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Email</label>
+              <input type="email" name="attendee_1_email" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500" required>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Gender</label>
+              <select name="attendee_1_gender" 
+                      class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-teal-500">
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <input type="hidden" name="attendee_1_ticket_type" value="Standard">
+          </div>
+        </div>
       </div>
-    </div>
-  </nav>
 
-  {% if messages %}
-  <div class="container mx-auto mt-4">
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  <div class="min-h-screen bg-gray-50 py-10">
-    <div class="card bg-white p-10 w-full max-w-4xl mx-auto" data-aos="zoom-in" data-aos-duration="1000">
-      <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-8">📝 Attendee Information</h2>
-      <p class="text-center text-gray-500 mb-10">Fill attendee details for each ticket before payment.</p>
-
-      <form method="POST" action="{% url 'make_payment' event.id %}">
-        {% csrf_token %}
-        <div class="space-y-10">
-          {% for i in tickets.standard|times %}
-          <div class="border rounded-2xl p-6 shadow-md hover:shadow-xl transition" data-aos="fade-up"
-            data-aos-delay="{{ forloop.counter0|mul:100 }}">
-            <h3 class="text-xl font-bold text-teal-600 mb-4">🎟 Ticket #{{ forloop.counter }} - Standard</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="space-y-4">
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Full Name</label>
-                  <input type="text" name="attendee_{{ forloop.counter }}_name"
-                    class="form-control rounded-lg px-4 py-2 w-full" required>
-                </div>
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Phone</label>
-                  <input type="text" name="attendee_{{ forloop.counter }}_phone"
-                    class="form-control rounded-lg px-4 py-2 w-full" required>
-                </div>
-              </div>
-              <div class="space-y-4">
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Email</label>
-                  <input type="email" name="attendee_{{ forloop.counter }}_email"
-                    class="form-control rounded-lg px-4 py-2 w-full" required>
-                </div>
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Gender</label>
-                  <select name="attendee_{{ forloop.counter }}_gender" class="form-control rounded-lg px-4 py-2 w-full">
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <input type="hidden" name="attendee_{{ forloop.counter }}_ticket_type" value="Standard">
-              </div>
+      <!-- VIP Ticket -->
+      <div class="relative border-l-[6px] border-yellow-500 rounded-2xl p-8 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 bg-gradient-to-r from-white to-gray-50"
+           data-aos="fade-left" data-aos-delay="500">
+        <span class="absolute -top-4 left-6 bg-yellow-500 text-white px-4 py-1 rounded-full shadow-md text-sm">VIP</span>
+        <h3 class="text-2xl font-bold text-yellow-600 mb-6">🎟 Ticket #2</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Full Name</label>
+              <input type="text" name="attendee_2_name" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500" required>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Phone</label>
+              <input type="text" name="attendee_2_phone" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500" required>
             </div>
           </div>
-          {% endfor %}
-          {% for i in tickets.vip|times %}
-          <div class="border rounded-2xl p-6 shadow-md hover:shadow-xl transition" data-aos="fade-up"
-            data-aos-delay="{{ forloop.counter0|add:tickets.standard|mul:100 }}">
-            <h3 class="text-xl font-bold text-teal-600 mb-4">🎟 Ticket #{{ forloop.counter|add:tickets.standard }} - VIP
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="space-y-4">
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Full Name</label>
-                  <input type="text" name="attendee_{{ forloop.counter|add:tickets.standard }}_name"
-                    class="form-control rounded-lg px-4 py-2 w-full" required>
-                </div>
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Phone</label>
-                  <input type="text" name="attendee_{{ forloop.counter|add:tickets.standard }}_phone"
-                    class="form-control rounded-lg px-4 py-2 w-full" required>
-                </div>
-              </div>
-              <div class="space-y-4">
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Email</label>
-                  <input type="email" name="attendee_{{ forloop.counter|add:tickets.standard }}_email"
-                    class="form-control rounded-lg px-4 py-2 w-full" required>
-                </div>
-                <div>
-                  <label class="text-sm font-semibold text-gray-600">Gender</label>
-                  <select name="attendee_{{ forloop.counter|add:tickets.standard }}_gender"
-                    class="form-control rounded-lg px-4 py-2 w-full">
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <input type="hidden" name="attendee_{{ forloop.counter|add:tickets.standard }}_ticket_type" value="VIP">
-              </div>
+          <div class="space-y-5">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Email</label>
+              <input type="email" name="attendee_2_email" 
+                     class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500" required>
             </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700">Gender</label>
+              <select name="attendee_2_gender" 
+                      class="rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-yellow-500">
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <input type="hidden" name="attendee_2_ticket_type" value="VIP">
           </div>
-          {% endfor %}
         </div>
+      </div>
 
-        <div class="flex justify-between mt-10">
-          <a href="{% url 'book_tickets' event.id %}"
-            class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300">❌ Cancel</a>
-          <button type="submit"
-            class="px-8 py-3 bg-teal-600 text-white font-semibold rounded-xl shadow-lg hover:bg-teal-700 transition">💳
-            Make Payment</button>
-        </div>
-      </form>
-    </div>
+      <!-- Buttons -->
+      <div class="flex justify-between items-center mt-12" data-aos="zoom-in" data-aos-delay="700">
+        <a href="{% url 'book_tickets' event.id %}" 
+           class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300 transition transform hover:-translate-y-1">
+          ❌ Cancel
+        </a>
+        <button type="submit" 
+                class="px-10 py-4 bg-gradient-to-r from-teal-600 to-green-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition transform duration-300">
+          💳 Make Payment
+        </button>
+      </div>
+    </form>
   </div>
-
-  <footer class="bg-gray-900 text-white text-center p-4 mt-auto">
-    <p>&copy; 2025 EventHive. All rights reserved.</p>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>AOS.init({ once: true });</script>
-</body>
-
-</html>
+</div>
+{% endblock %}

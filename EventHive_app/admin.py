@@ -1,9 +1,13 @@
 from django.contrib import admin
 from .models import CustomUser, Category, Event, Ticket, Booking, Attendee, Profile
-
+from django.contrib.auth.admin import UserAdmin
 @admin.register(CustomUser)
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'email', 'phone', 'is_verified', 'is_organizer', 'is_attendee']
+    model = CustomUser
+    list_display = ["id", "username", "email", "phone", "is_verified", "is_organizer", "is_attendee"]
+    fieldsets = UserAdmin.fieldsets + (
+        ("Extra Info", {"fields": ("phone", "otp", "is_verified", "is_organizer", "is_attendee", "image")}),
+    )
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

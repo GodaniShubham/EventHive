@@ -6,9 +6,39 @@
 {% block content %}
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<style>
+  /* Subtle card hover floating */
+  .card-hover {
+    transition: all 0.4s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(99,102,241,0.25);
+  }
+
+  /* Animated gradient buttons */
+  .gradient-btn {
+    background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+    background-size: 200% 200%;
+    transition: all 0.4s ease;
+  }
+  .gradient-btn:hover {
+    background-position: 100% 0;
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+  }
+
+  /* Search Bar Focus */
+  .search-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+  }
+</style>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Filters -->
-    <form method="get" class="flex flex-wrap gap-4 mb-8 items-center justify-between">
+    <form method="get" class="flex flex-wrap gap-4 mb-12 items-center justify-between bg-white/70 backdrop-blur-md p-6 rounded-2xl shadow-md" data-aos="fade-up">
         <div class="flex flex-wrap gap-4">
             <!-- Category Filter -->
             <select name="category" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
@@ -21,7 +51,8 @@
             </select>
 
             <!-- Date Filter -->
-            <input type="date" name="date" value="{{ date_filter }}" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
+            <input type="date" name="date" value="{{ date_filter }}" 
+                   class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
 
             <!-- Event Type Filter -->
             <select name="event_type" class="px-4 py-2 border rounded-lg shadow-sm focus:ring-indigo-500">
@@ -33,60 +64,59 @@
 
         <!-- Search -->
         <div class="flex items-center border rounded-lg shadow-sm overflow-hidden">
-            <input type="text" name="search" placeholder="Search events..." value="{{ search_query }}" class="px-4 py-2 w-64 focus:outline-none">
-            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 hover:bg-indigo-700">
-                <i class="bi bi-search"></i>
+            <input type="text" name="search" placeholder="Search events..." 
+                   value="{{ search_query }}" 
+                   class="search-input px-4 py-2 w-64">
+            <button type="submit" class="gradient-btn text-white px-5 py-2 font-semibold">
+                🔍
             </button>
         </div>
     </form>
 
     <!-- Event Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
         {% for event in events %}
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl 
-                    transition transform hover:-translate-y-2 duration-500" data-aos="zoom-in" data-aos-duration="1000">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover" 
+             data-aos="zoom-in" data-aos-duration="1000">
 
             <!-- Banner -->
             {% if event.banner_image %}
-            <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="w-full h-48 object-cover">
+            <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" 
+                 class="w-full h-52 object-cover">
             {% else %}
-            <img src="https://picsum.photos/seed/{{ event.id }}/800/500" alt="dummy" class="w-full h-48 object-cover">
+            <img src="https://picsum.photos/seed/{{ event.id }}/800/500" 
+                 alt="dummy" class="w-full h-52 object-cover">
             {% endif %}
 
-            <div class="p-5">
+            <div class="p-6">
                 <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full">
                     {{ event.category.name }}
                 </span>
-                <h3 class="text-xl font-bold mt-3">{{ event.title }}</h3>
-                <p class="text-gray-600 text-sm mt-1">
+                <h3 class="text-2xl font-bold mt-4 text-gray-800 hover:text-indigo-600 transition">
+                    {{ event.title }}
+                </h3>
+                <p class="text-gray-600 text-sm mt-2">
                     {{ event.description|truncatewords:15 }}
                 </p>
-                <p class="text-gray-500 text-xs mt-2">
-                    <i class="bi bi-geo-alt"></i> {{ event.location }}
-                </p>
-                <p class="text-gray-500 text-xs">
-                    <i class="bi bi-calendar-event"></i>
-                    {{ event.start_date|date:"M d, Y" }}
-                </p>
-                <p class="text-gray-500 text-xs">
-                    <i class="bi bi-cash-stack"></i> {{ event.get_event_type_display }}
-                </p>
-                <a href="{% url 'event_detail' event.id %}" class="inline-block mt-4 w-full text-center 
-                        bg-gradient-to-r from-indigo-600 to-purple-600 
-                        text-white py-2 rounded-xl font-semibold 
-                        shadow-md hover:scale-105 transition">
+                <div class="mt-3 space-y-1 text-sm text-gray-500">
+                    <p><i class="bi bi-geo-alt"></i> {{ event.location }}</p>
+                    <p><i class="bi bi-calendar-event"></i> {{ event.start_date|date:"M d, Y" }}</p>
+                    <p><i class="bi bi-cash-stack"></i> {{ event.get_event_type_display }}</p>
+                </div>
+                <a href="{% url 'event_detail' event.id %}" 
+                   class="gradient-btn block mt-6 text-center text-white py-2.5 rounded-xl font-semibold shadow-md transition">
                     View Details
                 </a>
             </div>
         </div>
         {% empty %}
-        <p class="col-span-3 text-center text-gray-500">🚫 No events found.</p>
+        <p class="col-span-3 text-center text-gray-500 text-lg">🚫 No events found.</p>
         {% endfor %}
     </div>
 
     <!-- Pagination -->
-    <div class="flex justify-center mt-10">
-        <nav class="flex items-center space-x-2">
+    <div class="flex justify-center mt-14">
+        <nav class="flex items-center space-x-2" data-aos="fade-up">
             {% if events.has_previous %}
             <a href="?page=1" class="px-3 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white rounded-lg">« First</a>
             <a href="?page={{ events.previous_page_number }}" class="px-3 py-2 bg-gray-200 hover:bg-indigo-600 hover:text-white rounded-lg">←</a>
@@ -110,6 +140,6 @@
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-    AOS.init({ once: true });
+    AOS.init({ once: true, duration: 1000, offset: 120 });
 </script>
 {% endblock %}

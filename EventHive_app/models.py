@@ -10,6 +10,9 @@ class CustomUser(AbstractUser):
     is_verified = models.BooleanField(default=False)
     is_organizer = models.BooleanField(default=False) 
     is_attendee = models.BooleanField(default=False)
+    image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
+
+    
     def __str__(self):
         return self.username
 
@@ -41,10 +44,11 @@ class Event(models.Model):
     description = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     banner_image = models.ImageField(upload_to="events/banners/", blank=True, null=True)
-
+    
     start_date = models.DateField()
     end_date = models.DateField()
-    start_time = models.TimeField()
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
     location = models.CharField(max_length=200)
 
     event_type = models.CharField(max_length=10, choices=EVENT_TYPE_CHOICES, default="free")
@@ -127,3 +131,4 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
+

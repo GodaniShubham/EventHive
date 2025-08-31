@@ -6,22 +6,33 @@
 {% block content %}
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-<div class="min-h-screen bg-gray-50 py-10">
-  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6" data-aos="zoom-in" data-aos-duration="1000">
-    <h2 class="text-2xl font-bold mb-4 text-indigo-700">🎉 Create New Event</h2>
+<div class="min-h-screen bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 py-10">
+  <div class="max-w-5xl mx-auto bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-gray-100" 
+       data-aos="zoom-in" data-aos-duration="1000">
 
-    <form method="post" enctype="multipart/form-data" class="space-y-6">
+    <!-- Heading -->
+    <div class="flex items-center gap-3 mb-6">
+      <div class="p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg">
+        🎉
+      </div>
+      <h2 class="text-3xl font-extrabold text-gray-800">Create New Event</h2>
+    </div>
+    <p class="text-gray-500 mb-8">Fill in the details below to launch your event on <span class="font-semibold text-indigo-600">EventHive</span>.</p>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-8">
       {% csrf_token %}
-      
+
       <!-- Event Basics -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="title" class="block text-sm font-medium text-gray-700">Event Title</label>
-          <input type="text" name="title" id="title" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+          <label for="title" class="block text-sm font-semibold text-gray-700 mb-1">Event Title</label>
+          <input type="text" name="title" id="title" required
+                 class="w-full border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
         </div>
         <div>
-          <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
-          <select name="category" id="category" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+          <label for="category" class="block text-sm font-semibold text-gray-700 mb-1">Category</label>
+          <select name="category" id="category" required
+                  class="w-full border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-indigo-500 transition">
             <option value="">Select Category</option>
             {% for category in categories %}
               <option value="{{ category.id }}">{{ category.name }}</option>
@@ -30,52 +41,63 @@
         </div>
       </div>
 
+      <!-- Description -->
       <div>
-        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
-        <textarea name="description" id="description" rows="4" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500"></textarea>
+        <label for="description" class="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+        <textarea name="description" id="description" rows="4" required
+                  class="w-full border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-purple-500 transition"></textarea>
       </div>
 
       <!-- Dates and Time -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <label for="start_date" class="block text-sm font-medium text-gray-700">Start Date</label>
-          <input type="date" name="start_date" id="start_date" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+          <label for="start_date" class="block text-sm font-semibold text-gray-700 mb-1">Start Date</label>
+          <input type="date" name="start_date" id="start_date" required
+                 class="w-full border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-indigo-500 transition">
         </div>
         <div>
-          <label for="end_date" class="block text-sm font-medium text-gray-700">End Date</label>
-          <input type="date" name="end_date" id="end_date" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+          <label for="end_date" class="block text-sm font-semibold text-gray-700 mb-1">End Date</label>
+          <input type="date" name="end_date" id="end_date" required
+                 class="w-full border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-indigo-500 transition">
         </div>
         <div>
-          <label for="start_time" class="block text-sm font-medium text-gray-700">Start Time</label>
-          <input type="time" name="start_time" id="start_time" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+          <label for="start_time" class="block text-sm font-semibold text-gray-700 mb-1">Start Time</label>
+          <input type="time" name="start_time" id="start_time" required
+                 class="w-full border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-indigo-500 transition">
         </div>
       </div>
 
       <!-- Location and Type -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="location" class="block text-sm font-medium text-gray-700">Location</label>
-          <input type="text" name="location" id="location" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
+          <label for="location" class="block text-sm font-semibold text-gray-700 mb-1">Location</label>
+          <input type="text" name="location" id="location" required
+                 class="w-full border rounded-lg p-3 shadow-sm focus:ring-2 focus:ring-indigo-500 transition">
         </div>
         <div>
-          <label for="event_type" class="block text-sm font-medium text-gray-700">Event Type</label>
-          <select name="event_type" id="event_type" required class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
-            <option value="">Select Type</option>
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-          </select>
-        </div>
+  <label class="block text-sm mb-2">Event Type</label>
+  <select name="event_type" 
+          class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:ring-2 focus:ring-indigo-500">
+    <option value="online" {% if event.event_type == "online" %}selected{% endif %}>Online</option>
+    <option value="offline" {% if event.event_type == "offline" %}selected{% endif %}>Offline</option>
+    <option value="hybrid" {% if event.event_type == "hybrid" %}selected{% endif %}>Hybrid</option>
+  </select>
+</div>
+
       </div>
 
       <!-- Banner Image -->
       <div>
-        <label for="banner_image" class="block text-sm font-medium text-gray-700">Banner Image</label>
-        <input type="file" name="banner_image" id="banner_image" accept="image/*" class="mt-1 block w-full border rounded-lg p-2 shadow-sm focus:ring-indigo-500">
-        <img id="banner-preview" class="mt-2 w-full h-40 object-cover rounded-lg hidden">
+        <label for="banner_image" class="block text-sm font-semibold text-gray-700 mb-1">Banner Image</label>
+        <input type="file" name="banner_image" id="banner_image" accept="image/*"
+               class="w-full border rounded-lg p-3 shadow-sm bg-white cursor-pointer focus:ring-2 focus:ring-purple-500 transition">
+        <img id="banner-preview" class="mt-4 w-full h-48 object-cover rounded-xl shadow hidden">
       </div>
 
-      <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl shadow-lg font-semibold hover:scale-105 transition">
-        🚀 Create Event
+      <!-- Submit Button -->
+      <button type="submit"
+              class="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl shadow-xl font-bold text-lg tracking-wide hover:scale-105 hover:shadow-2xl transition transform duration-300">
+        🚀 Launch Event
       </button>
     </form>
   </div>
@@ -84,7 +106,7 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>AOS.init({ once: true });</script>
 <script>
-  // Preview banner image
+  // Banner image preview
   document.getElementById('banner_image').addEventListener('change', function(event) {
     const preview = document.getElementById('banner-preview');
     const file = event.target.files[0];
