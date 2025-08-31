@@ -1,123 +1,124 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EventHive Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EventHive{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const profileBtn = document.querySelector(".group > button");
-            const dropdown = document.querySelector(".dropdown-menu");
-
-            profileBtn.addEventListener("click", () => {
-                dropdown.classList.toggle("opacity-100");
-                dropdown.classList.toggle("visible");
-            });
-
-            document.addEventListener("click", (e) => {
-                if (!profileBtn.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.classList.remove("opacity-100");
-                    dropdown.classList.remove("visible");
-                }
-            });
-        });
-    </script>
 </head>
 
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-50 text-gray-900">
+
     <!-- Navbar -->
-    <nav class="bg-white shadow-md fixed w-full z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <a href="#" class="flex items-center space-x-2">
-                        <img src="{% static 'images/logo.png' %}" alt="Logo" class="h-10" />
-                        <span class="text-xl font-bold text-indigo-600">EventHive</span>
-                    </a>
-                </div>
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="{% url 'home' %}" class="text-2xl font-extrabold text-indigo-600">
+                Event<span class="text-purple-600">Hive</span>
+            </a>
 
-                <!-- Navigation -->
-                <div class="hidden md:flex space-x-6 items-center">
-                    <a href="{% url 'attendee_home' %}" class="text-gray-700 hover:text-indigo-600">Dashboard</a>
-                    <a href="{% url 'event_list' %}" class="text-gray-700 hover:text-indigo-600">Events</a>
-                    <a href="{% url 'my_registrations' %}" class="text-gray-700 hover:text-indigo-600">My Registrations</a>
-                    <a href="{% url 'notifications' %}" class="text-gray-700 hover:text-indigo-600">Notifications</a>
+            <!-- Nav Links (Desktop) -->
+            <!-- Nav Links (Desktop) -->
+            <div class="hidden md:flex items-center space-x-8 font-semibold">
 
-                    <!-- Profile -->
-                    <div class="relative group">
-                        <button class="w-10 h-10 rounded-full overflow-hidden border-2 border-indigo-600 focus:outline-none">
-                            {% if user.image %}
-                                <img src="{{ user.image.url }}"
-                                     onerror="this.onerror=null;this.src='/media/profile_images/default-avatar.png';"
-                                     class="w-10 h-10 object-cover">
-                            {% else %}
-                                <span class="w-10 h-10 flex items-center justify-center bg-indigo-600 text-white font-bold">
-                                    {{ user.username|first|upper }}
-                                </span>
-                            {% endif %}
-                        </button>
+                {% if user.is_authenticated %}
+                {% if user.is_organizer %}
+                <!-- Organizer Home -->
+                <a href="{% url 'organizer_home' %}" class="hover:text-indigo-600 transition">Home</a>
+                {% else %}
+                <!-- Normal User Home -->
+                <a href="{% url 'home' %}" class="hover:text-indigo-600 transition">Home</a>
+                {% endif %}
+                {% else %}
+                <!-- Guest User -->
+                <a href="{% url 'home' %}" class="hover:text-indigo-600 transition">Home</a>
+                {% endif %}
 
-                        <!-- Dropdown -->
-                        <div
-                            class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible transition-opacity duration-300 dropdown-menu">
-                            <a href="{% url 'profile_page' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">👤 View Profile</a>
-                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">🚪 Logout</a>
-                        </div>
+                <a href="{% url 'attendee_home' %}" class="hover:text-indigo-600 transition">Events</a>
+
+                {% if user.is_authenticated %}
+                <!-- Profile Dropdown -->
+                <div class="relative group">
+                    <button
+                        class="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold focus:outline-none">
+                        {{ user.username|first|upper }}
+                    </button>
+
+                    <div
+                        class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible transition-opacity duration-300 dropdown-menu">
+                        <a href="{% url 'profile_page' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">👤 View
+                            Profile</a>
+                        <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">🚪
+                            Logout</a>
                     </div>
                 </div>
-
-                <!-- Mobile menu button -->
-                <div class="md:hidden flex items-center">
-                    <button id="mobile-menu-button" class="text-gray-700 hover:text-indigo-600 focus:outline-none">
-                        ☰
-                    </button>
-                </div>
+                {% else %}
+                <a href="{% url 'login' %}" class="hover:text-indigo-600 transition">Login</a>
+                <a href="{% url 'register' %}"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-md">
+                    Sign Up
+                </a>
+                {% endif %}
             </div>
+
+
+            <style>
+                /* Dropdown appears on hover and stays for 0.5s after leaving */
+                .group:hover .dropdown-menu {
+                    opacity: 1;
+                    visibility: visible;
+                    transition-delay: 0s;
+                }
+
+                .dropdown-menu {
+                    transition: opacity 0.3s ease, visibility 0.3s ease;
+                }
+
+                /* Optional: keep it visible slightly longer after leaving */
+                .group .dropdown-menu {
+                    pointer-events: auto;
+                }
+            </style>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-gray-600 focus:outline-none" id="menu-btn">
+                ☰
+            </button>
         </div>
+
+        <!-- Mobile Menu -->
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden px-6 pb-4 space-y-2 font-semibold" id="mobile-menu">
+            <a href="{% url 'home' %}" class="block py-2 hover:text-indigo-600">Home</a>
+            <a href="{% url 'attendee_home' %}" class="block py-2 hover:text-indigo-600">Events</a>
+
+            {% if user.is_authenticated %}
+            <a href="{% url 'profile' %}" class="block py-2 hover:text-indigo-600">👤 View Profile</a>
+            <a href="{% url 'logout' %}" class="block py-2 hover:text-red-600">🚪 Logout</a>
+            {% else %}
+            <a href="{% url 'login' %}" class="block py-2 hover:text-indigo-600">Login</a>
+            <a href="{% url 'register' %}"
+                class="block py-2 bg-indigo-600 text-white rounded-lg px-4 hover:bg-indigo-700">Sign Up</a>
+            {% endif %}
+        </div>
+
     </nav>
 
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-md">
-        <a href="{% url 'attendee_home' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Dashboard</a>
-        <a href="{% url 'event_list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Events</a>
-        <a href="{% url 'my_registrations' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My Registrations</a>
-        <a href="{% url 'notifications' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Notifications</a>
+    <!-- Content -->
+    <main class="py-10">
+        {% block content %}{% endblock %}
+    </main>
 
-        <!-- Mobile profile -->
-        <div class="flex items-center space-x-3 px-4 py-3 border-t border-gray-200">
-            {% if user.image %}
-                <img src="{{ user.image.url }}"
-                     onerror="this.onerror=null;this.src='/media/profile_images/default-avatar.png';"
-                     class="w-10 h-10 rounded-full object-cover">
-            {% else %}
-                <span class="w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600 text-white font-bold">
-                    {{ user.username|first|upper }}
-                </span>
-            {% endif %}
-            <div>
-                <p class="text-gray-800 font-semibold">{{ user.username }}</p>
-                <a href="{% url 'profile_page' %}" class="text-sm text-indigo-600 hover:underline">View Profile</a>
-            </div>
-        </div>
-        <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">🚪 Logout</a>
-    </div>
-
-    <!-- Main Content -->
-    <div class="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {% block content %}
-        <!-- Content will go here -->
-        {% endblock %}
-    </div>
-
+    <!-- JS for Mobile Menu -->
     <script>
-        document.getElementById("mobile-menu-button").addEventListener("click", () => {
-            const mobileMenu = document.getElementById("mobile-menu");
-            mobileMenu.classList.toggle("hidden");
+        const btn = document.getElementById('menu-btn');
+        const menu = document.getElementById('mobile-menu');
+        btn.addEventListener('click', () => {
+            menu.classList.toggle('hidden');
         });
     </script>
+
 </body>
+
 </html>

@@ -18,7 +18,7 @@
     </div>
 
     <!-- Form -->
-    <form method="POST" action="{% url 'make_payment' event.id %}" class="space-y-12">
+    <form method="POST" action="{% url 'payment_page' event.id %}" class="space-y-12">
       {% csrf_token %}
 
       <!-- Standard Ticket -->

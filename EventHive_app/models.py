@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import User
 
 
 # ------------------- Custom User Model -------------------
@@ -12,7 +11,6 @@ class CustomUser(AbstractUser):
     is_attendee = models.BooleanField(default=False)
     image = models.ImageField(upload_to="profile_images/", null=True, blank=True)
 
-    
     def __str__(self):
         return self.username
 
@@ -66,6 +64,11 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.title} ({self.start_date})"
 
+    # ✅ Helper property (not a DB field)
+    @property
+    def is_published(self):
+        return self.status == "published"
+
 
 # ------------------- Ticket Model -------------------
 class Ticket(models.Model):
@@ -83,7 +86,6 @@ class Ticket(models.Model):
 
 
 # ------------------- Booking Model -------------------
-# models.py
 class Booking(models.Model):
     PAYMENT_STATUS_CHOICES = [
         ("pending", "Pending"),
@@ -97,7 +99,11 @@ class Booking(models.Model):
     attendee_name = models.CharField(max_length=100, blank=True, null=True)
     attendee_email = models.EmailField(blank=True, null=True)
     attendee_phone = models.CharField(max_length=15, blank=True, null=True)
-    attendee_gender = models.CharField(max_length=10, choices=[("male", "Male"), ("female", "Female"), ("other", "Other")], blank=True, null=True)
+    attendee_gender = models.CharField(
+        max_length=10,
+        choices=[("male", "Male"), ("female", "Female"), ("other", "Other")],
+        blank=True, null=True
+    )
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending")
     payment_id = models.CharField(max_length=100, blank=True, null=True)  # Changed from transaction_id
     amount_paid = models.DecimalField(max_digits=8, decimal_places=2, default=0.00)
@@ -108,6 +114,7 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.event.title} ({self.ticket.type})"
+
 
 # ------------------- Attendee Model -------------------
 class Attendee(models.Model):
@@ -124,6 +131,7 @@ class Attendee(models.Model):
         return f"{self.name} - {self.booking.event.title}"
 
 
+# ------------------- Profile Model -------------------
 class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)  # ✅ use CustomUser
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
@@ -131,4 +139,3 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
-

@@ -36,4 +36,8 @@ urlpatterns = [
 
     # ⭐ New Attendees List Page
     path("organizer/event/<int:event_id>/attendees/", views.attendees_list, name="attendees_list"),
+    path("payment/<int:event_id>/", views.payment_page, name="payment_page"),
+    path("confirm-payment/<int:event_id>/", views.confirm_payment, name="confirm_payment"),
+
 ]
+

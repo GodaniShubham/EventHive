@@ -1,57 +1,74 @@
 {% extends "base.html" %}
-{% block title %}Attendee Payment - EventHive{% endblock %}
+{% block title %}Payment - EventHive{% endblock %}
 
 {% block content %}
-<div class="py-12 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
+<div class="py-16 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
   <div class="bg-white p-10 w-full max-w-3xl mx-auto shadow-2xl rounded-3xl border border-gray-200"
-       data-aos="fade-up" data-aos-duration="1000">
+       data-aos="zoom-in" data-aos-duration="1000">
 
     <!-- Heading -->
     <div class="text-center mb-10">
-      <h2 class="text-4xl font-extrabold bg-gradient-to-r from-teal-600 to-green-500 bg-clip-text text-transparent">
-        💳 Payment Checkout
+      <h2 class="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-500 bg-clip-text text-transparent">
+        💳 Payment Page
       </h2>
-      <p class="text-gray-600 mt-3 text-lg">Confirm your payment to proceed 🚀</p>
+      <p class="text-gray-600 mt-3 text-lg">
+        Complete your payment for <span class="font-semibold text-indigo-600">{{ event.title }}</span>
+      </p>
     </div>
 
-    <!-- Payment Summary -->
-    <div class="bg-gradient-to-r from-gray-50 to-white rounded-2xl shadow-md p-6 mb-8 border">
-      <h3 class="text-xl font-bold mb-4 text-teal-600">🧾 Order Summary</h3>
-      <ul class="space-y-2 text-gray-700">
-        <li>🎟 Standard Ticket × {{ standard_qty }} → <span class="font-semibold">₹{{ standard_qty|add:"0"|mul:500 }}</span></li>
-        <li>🎟 VIP Ticket × {{ vip_qty }} → <span class="font-semibold">₹{{ vip_qty|add:"0"|mul:1000 }}</span></li>
-      </ul>
-      <hr class="my-4">
-      <p class="text-lg font-bold">Total: <span class="text-green-600">₹{{ total_price }}</span></p>
-    </div>
-
-    <!-- Payment Methods -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div class="border rounded-xl p-4 text-center hover:shadow-lg cursor-pointer transition">
-        <img src="https://img.icons8.com/color/96/upi.png" alt="UPI" class="mx-auto w-12 mb-2"/>
-        <p class="font-semibold">UPI</p>
-      </div>
-      <div class="border rounded-xl p-4 text-center hover:shadow-lg cursor-pointer transition">
-        <img src="https://img.icons8.com/color/96/visa.png" alt="Card" class="mx-auto w-12 mb-2"/>
-        <p class="font-semibold">Credit / Debit Card</p>
-      </div>
-      <div class="border rounded-xl p-4 text-center hover:shadow-lg cursor-pointer transition">
-        <img src="https://img.icons8.com/color/96/paypal.png" alt="PayPal" class="mx-auto w-12 mb-2"/>
-        <p class="font-semibold">PayPal</p>
-      </div>
-    </div>
-
-    <!-- Form -->
-    <form method="POST" action="{% url 'make_payment' event.id %}">
+    <!-- Payment Form -->
+    <form method="POST" action="{% url 'confirm_payment' event.id %}" class="space-y-8">
       {% csrf_token %}
+
+      <!-- Card Info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Card Holder Name</label>
+          <input type="text" name="card_name" placeholder="John Doe"
+                 class="mt-2 rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-indigo-500" required>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Card Number</label>
+          <input type="text" name="card_number" placeholder="1234 5678 9012 3456"
+                 class="mt-2 rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-indigo-500" required>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">Expiry Date</label>
+          <input type="text" name="expiry" placeholder="MM/YY"
+                 class="mt-2 rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-indigo-500" required>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700">CVV</label>
+          <input type="password" name="cvv" placeholder="***"
+                 class="mt-2 rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-indigo-500" required>
+        </div>
+      </div>
+
+      <!-- UPI Option -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-700">Or Pay via UPI</label>
+        <input type="text" name="upi_id" placeholder="yourname@upi"
+               class="mt-2 rounded-xl border px-4 py-3 w-full focus:ring-2 focus:ring-green-500">
+      </div>
+
+      <!-- Total -->
+      <div class="flex justify-between items-center mt-6 p-4 bg-gray-50 rounded-xl border">
+        <span class="text-lg font-semibold text-gray-700">Total Amount:</span>
+        <span class="text-2xl font-bold text-indigo-600">₹ {{ event.price }}</span>
+      </div>
+
+      <!-- Buttons -->
       <div class="flex justify-between items-center mt-8">
         <a href="{% url 'attendee_tickets' event.id %}" 
-           class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300 transition">
-          ❌ Cancel
+           class="px-6 py-3 bg-gray-200 rounded-xl shadow hover:bg-gray-300 transition transform hover:-translate-y-1">
+          ⬅ Back
         </a>
         <button type="submit"
-                class="px-10 py-4 bg-gradient-to-r from-teal-600 to-green-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition duration-300">
-          ✅ Confirm & Pay
+                class="px-10 py-4 bg-gradient-to-r from-indigo-600 to-purple-500 text-white text-lg font-semibold rounded-xl shadow-lg hover:scale-105 transition transform duration-300">
+          ✅ Confirm Payment
         </button>
       </div>
     </form>
