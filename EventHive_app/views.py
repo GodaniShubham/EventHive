@@ -694,6 +694,3 @@ def my_events(request):
         },
     ]
     return render(request, "organizer.html", {"events": events})
-def payment_page(request, event_id):
-    event = get_object_or_404(Event, id=event_id)
-    return render(request, "payment_page.html", {"event": event})
